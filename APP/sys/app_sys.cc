@@ -35,7 +35,7 @@ int8_t r = 0, g = 0, b = 0;
 void app_sys_init() {
     INS::init();
 
-#if defined(COMPILE_CHASSIS_MECANUM) || defined(COMPILE_CHASSIS_OMNI) || defined(COMPILE_CHASSIS_AGV)
+#if defined(COMPILE_CHASSIS_MECANUM) || defined(COMPILE_CHASSIS_OMNI) || defined(COMPILE_CHASSIS_AGV) || defined(COMPILE_CHASSIS_DOGS)
     app_chassis_init();
 #endif
 #ifdef COMPILE_GIMBAL

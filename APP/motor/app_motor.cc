@@ -47,11 +47,13 @@ static double degree_delta(double current, double target) {
     return dt;
 }
 
-MotorController <DJIMotor> :: MotorController(const char *name, const DJIMotor::Model &model, const DJIMotor::Param &param,
+MotorController <DJIMotor> :: MotorController(
+	const char *name, const DJIMotor::Model &model, const DJIMotor::Param &param,
         uint8_t control_mode,
-        const Algorithm::PID::pid_param_t &pid_speed, const Algorithm::PID::pid_param_t &pid_angle) :
-        motor_(name, model, param), control_mode_(control_mode), target(0.0) {
+        const Algorithm::PID::pid_param_t &pid_speed,
+        const Algorithm::PID::pid_param_t &pid_angle) :
 
+	motor_(name, model, param), control_mode_(control_mode), target(0.0) {
     pid_speed_.set_para(pid_speed);
     pid_angle_.set_para(pid_angle);
 }

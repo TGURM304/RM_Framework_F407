@@ -14,19 +14,22 @@
 // #define COMPILE_CHASSIS_MECANUM
 
 // 底盘 - 全向轮
-// #define COMPILE_CHASSIS_OMNI
+//#define COMPILE_CHASSIS_OMNI
 
 // 底盘 - 舵轮
-#define COMPILE_CHASSIS_AGV
+//#define COMPILE_CHASSIS_AGV
 
 // 云台
 // #define COMPILE_GIMBAL
+
+//底盘-笨笨（对的，笨笨的官方英文名叫DOGS）
+#define COMPILE_CHASSIS_DOGS
 
 // 双控制器
 #define USE_DUAL_CONTROLLERS
 
 // 检查是否有冲突（？）
-#if defined(COMPILE_CHASSIS_MECANUM) + defined(COMPILE_CHASSIS_OMNI) + defined(COMPILE_CHASSIS_AGV) > 1
+#if defined(COMPILE_CHASSIS_MECANUM) + defined(COMPILE_CHASSIS_OMNI) + defined(COMPILE_CHASSIS_DOGS) + defined(COMPILE_CHASSIS_AGV)  > 1
 #error Invalid Definition
 #endif
 

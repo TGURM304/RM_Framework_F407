@@ -5,6 +5,7 @@
 #pragma once
 #include "alg_pid.h"
 #include "dev_motor_dji.h"
+#include "dev_damiao.h"
 
 #define MOTOR_CONTROLLER_LIMIT 16
 
@@ -44,3 +45,4 @@ private:
     DJIMotor motor_;
     Algorithm::PID pid_speed_, pid_angle_;
 };
+

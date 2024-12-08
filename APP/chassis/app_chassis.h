@@ -5,6 +5,9 @@
 #pragma once
 
 #ifdef __cplusplus
+
+void Damiao_test();
+void Damiao_enable();
 extern "C" {
 #endif
 

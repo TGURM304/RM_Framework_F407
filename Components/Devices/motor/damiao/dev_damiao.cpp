@@ -1,0 +1,63 @@
+//
+// Created by 15082 on 2024/12/7.
+//
+
+#include "dev_damiao.h"
+
+#include "bsp_def.h"
+#include "string.h"
+
+DamiaoMotor::DamiaoMotor(const Param& param) {
+	port = param.port;
+	mode = param.mode;
+	max_position = param.max_position;
+	max_speed = param.max_speed;
+	if(param.mode != E_MITE) // 目前没写MITE
+	send_id = 0x100*param.mode + param.slave_id;
+	receive_id = param.master_id;
+}
+/*
+ * 简介:本函数用于转化浮点数为+-data_max的占比，用于支持DM4310
+ * x:输入的值
+ * data_max:X的最大和最小值
+ * bits:分辨率为几位
+ */
+uint16_t float_to_uint(float x, float data_max, float data_min, int bits) {
+	BSP_ASSERT(x <=data_max && x>=-data_max && bits)
+	return (uint16_t)((x-data_min)*((1 << bits) -1)/(data_max - data_min));
+}
+
+void DamiaoMotor::MIT_damiao_update(float P, float V, float position_p, float position_d, float T) {
+	BSP_ASSERT( (P!=0 + V!=0 + T!=0) <=1)
+	P_des = float_to_uint(P,max_position,-max_position,16);
+	V_des = float_to_uint(V,max_speed,-max_speed,12);
+	Kp = float_to_uint(position_p,500,0,12);
+	Kd = float_to_uint(position_d,5,0,12);
+	T_ff = float_to_uint(T,10,-10,12);
+	can_ary[0] = P_des>>8;
+	can_ary[1] = P_des&0xff;
+	can_ary[2] = V_des>>4;
+	can_ary[3] = (V_des)<<4&0xf0 | Kp>>8&0x0f;
+	can_ary[4] = Kp&0xff;
+	can_ary[5] = Kd>>4;
+	can_ary[6] = Kd<<4&0xf0 | T_ff>>8&0x0f;
+	can_ary[7] = T_ff&0xff;
+}
+
+void DamiaoMotor::can_send() {
+	bsp_can_send(port,send_id,can_ary);
+}
+void DamiaoMotor::MIT_enable() {
+	for (int i = 0; i<7; i++) {
+		can_ary[i] = 0xff;
+	}
+	can_ary[7] = 0xfc;
+	can_send();
+	for(int i =0; i<7; i++)
+		can_ary[i] = 0;
+}
+
+void DamiaoMotor::Speed_update(float speed) {
+	memcpy(can_ary, &speed, sizeof speed);
+}
+
