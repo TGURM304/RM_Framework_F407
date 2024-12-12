@@ -39,7 +39,7 @@ DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) {
         }
         feedback_id = 0x204 + param.id;
     }
-    if(model == M3508) {
+    if(model == M3508 || model == M2006) {
         BSP_ASSERT(1 <= param.id and param.id <= 8);
         // WARNING: M3508 (C620) 仅支持电流控制模式，请不要填写 VOLTAGE 迷惑自己，为了保证一致性，这将导致下面的 ASSERT 死循环。
         BSP_ASSERT(param.mode == CURRENT);

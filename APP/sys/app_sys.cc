@@ -38,7 +38,7 @@ void app_sys_init() {
 #if defined(COMPILE_CHASSIS_MECANUM) || defined(COMPILE_CHASSIS_OMNI) || defined(COMPILE_CHASSIS_AGV) || defined(COMPILE_CHASSIS_DOGS)
     app_chassis_init();
 #endif
-#ifdef COMPILE_GIMBAL
+#if defined(COMPILE_GIMBAL) || defined(SENTRY_GIMBAL_DEV)
     app_gimbal_init();
 #endif
 

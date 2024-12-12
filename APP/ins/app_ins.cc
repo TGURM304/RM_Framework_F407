@@ -32,6 +32,14 @@ const float gyro_std_err[3] = { 0.00342450268, -0.00207025907, -0.0056360052 };
 
 using namespace INS;
 
+static double degree_delta(double target, double current) {
+	double dt = target - current;
+	// 0 - 359
+	if(dt >  180) dt -= 360;
+	if(dt < -180) dt += 360;
+	return dt;
+}
+
 namespace INS {
     ins_data_t data_;
     OS::Task ins_task;
@@ -46,6 +54,7 @@ namespace INS {
         float gyro_err[3] = {0, 0, 0};
         while(true) {
             bsp_imu_raw_data_t *raw_data = bsp_imu_read();
+        	memcpy(&data_.raw, raw_data, sizeof(bsp_imu_raw_data_t));
             data_.imu_temp = raw_data->temp;
 
             if(++freq_cnt == 100) __HAL_TIM_SetCompare(IMU_TEMPERATURE_CONTROL_TIMER, IMU_TEMPERATURE_CONTROL_CHANNEL,
@@ -81,7 +90,9 @@ namespace INS {
                     raw_data->accel[0], raw_data->accel[1], raw_data->accel[2],
                     0, 0, 0
                 );
+            	const auto ty = data_.yaw, tp = data_.pitch, tr = data_.roll;
                 data_.pitch = Get_Pitch(), data_.roll = Get_Roll(), data_.yaw = Get_Yaw();
+            	data_.dt_pitch = degree_delta(data_.pitch, tp), data_.dt_roll = degree_delta(data_.roll, tr), data_.dt_yaw = degree_delta(data_.yaw, ty);
             }
             osDelay(1);
         }
