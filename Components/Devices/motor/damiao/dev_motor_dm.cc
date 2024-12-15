@@ -82,7 +82,8 @@ void DMMotor::control(float position, float speed) const {
 // MIT
 void DMMotor::control(float position, float speed, float Kp, float Kd, float torque) const {
     BSP_ASSERT(param_.mode == MIT);
-
+	//MIT模式要求不能同时出现position和speed同时不为零，而且Kd也不能为零
+	BSP_ASSERT((position!=0 && speed!=0) == 0 && Kd != 0)
     uint16_t P_des = float_to_uint(position, -param_.p_max, param_.p_max, 16),
              V_des = float_to_uint(speed, -param_.v_max, param_.v_max, 12),
              Kp_ = float_to_uint(Kp, 0, 500, 12),

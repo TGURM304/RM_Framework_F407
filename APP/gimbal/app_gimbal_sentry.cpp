@@ -21,7 +21,10 @@
 
 #ifdef SENTRY_GIMBAL_DEV
 
-DMMotor motor("dm-j4310", DMMotor::J4310, {
+#define PITCH_MAX 40.00
+#define PITCH_MIN (-30.00)
+#define PITCH_SPEED 1
+DMMotor m_pitch("dm-j4310", DMMotor::J4310, {
 	.slave_id = 0x02, .master_id = 0x01, .port = E_CAN1, .mode = DMMotor::POSITION_SPEED,
 	.p_max = 12.5, .v_max = 30, .t_max = 10, .kp_max = 500, .kd_max = 5
 });
@@ -34,8 +37,10 @@ DJIMotor m_yaw(
 void app_gimbal_init() {
 	m_yaw.init();
 }
+
 /*
  * 调试用接口，使用串口修改速度环PID参数
+ * 现已注释
  */
 void set_target(bsp_uart_e e, uint8_t *s, uint16_t l) {
 	float P,I,D;
@@ -49,8 +54,8 @@ double filter[10], filter_sum; uint8_t ptr = 0;
 
 static const auto ins = INS::data();
 static const auto rc = bsp_rc_data();
-
-
+static float pitch = 0.0f;//pitch轴相对角度，单位rad，水平为零点
+static float yaw = 180.0f;
 
 //双板通信发送
 void msg_mcu_send_g() {
@@ -70,41 +75,61 @@ void chassis_callback(bsp_can_msg_t *msg) {
 	memcpy(&data_rx_chassis, msg->data, sizeof data_rx_chassis);
 }
 
-
+/*
+ *陀螺仪角度值默认 -180 ~ +180
+ * 是的，这是一个足够优秀的函数，你只需要输入0-360度的yaw和限定范围的pitch，你就可以实现控制了（yaw自带优劣弧哦），让我们欢呼吧
+ * pitch: 0~360
+ * yaw: 0~360
+ */
+void gimbal_control(float target_pitch, float target_yaw) {
+	//测试中出现难以复现的错误，下面的BSP_ASSERT不建议使用
+	/*BSP_ASSERT(pitch >= PITCH_MIN && pitch<= PITCH_MAX && yaw >= 0 && yaw <= 360)*/
+	//PID err = target - current
+	float delta_yaw = target_yaw - ins->yaw +180;//把yaw值转化为0~360度并且求出delta
+	//下面两行为求出优劣弧传入pid中控制
+	if (delta_yaw > 180) delta_yaw -= 360;
+	if (delta_yaw < -180) delta_yaw += 360;
+	ptr = (ptr + 1) % 10;
+	filter_sum -= filter[ptr];//滤波，防止前馈可能导致的高频震荡
+	filter_sum += (filter[ptr] = PID_forward_feed(0, delta_yaw));
+	m_pitch.control(target_pitch/360*3.14, PITCH_SPEED);
+}
 
 void app_gimbal_task(void *argument) {
 	while(!app_sys_ready()) OS::Task::SleepMilliseconds(10);
 
-	//调试接口，现已注释
+	//yaw轴速度环调试接口，现已注释
 	/*bsp_uart_set_callback(E_UART_DEBUG, set_target);*/
 
-	motor.reset();
+	m_pitch.reset();
 	OS::Task::SleepMilliseconds(50);
-	motor.enable();
+	m_pitch.enable();
 
 	//设置双板通信回调
 	bsp_can_set_callback(E_CAN2,0X123,chassis_callback);
-
 	while(true) {
 
 		//发送双板通信数据
 		msg_mcu_send_g();
+		//防止数据超过设定范围
+		yaw -= (float)data_rx_chassis.tran_msg[0]/3000.0f;
+		if(yaw > 360) yaw -= 360;
+		if(yaw < -360) yaw += 360;
+		pitch -= (float)data_rx_chassis.tran_msg[1]/5000.0f;
+		if(pitch > PITCH_MAX) pitch = PITCH_MAX;
+		if(pitch < PITCH_MIN) pitch = PITCH_MIN;
 
-		ptr = (ptr + 1) % 10;
-
-		filter_sum -= filter[ptr];
-		filter_sum += (filter[ptr] = PID_forward_feed(ins->yaw, data_rx_chassis.tran_msg[0]/5.0));
+		gimbal_control(pitch, yaw);//云台控制函数
 
 		m_yaw.update(static_cast <float> (filter_sum / 10));
 
-		app_msg_vofa_send(E_UART_DEBUG, {
+		//调试云台所用调试接口，输出云台角度和速度波形
+		/*app_msg_vofa_send(E_UART_DEBUG, {
 			rc->rc_r[0]/5.0,
 			ins->yaw,
 			ins->dt_yaw*1000,
 			set_speed
-		});
-
-		motor.control(0, 1);
+		});*/
 		OS::Task::SleepMilliseconds(1);
 	}
 }

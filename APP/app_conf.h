@@ -23,7 +23,7 @@
 // #define COMPILE_GIMBAL
 
 //哨兵云台
- //#define SENTRY_GIMBAL_DEV
+//#define SENTRY_GIMBAL_DEV
 
 //底盘-笨笨（对的，笨笨的官方英文名叫DOGS）
 // #define COMPILE_CHASSIS_DOGS
