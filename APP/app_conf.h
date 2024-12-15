@@ -14,7 +14,7 @@
 // #define COMPILE_CHASSIS_MECANUM
 
 // 底盘 - 全向轮
-#define COMPILE_CHASSIS_OMNI
+//#define COMPILE_CHASSIS_OMNI
 
 // 底盘 - 舵轮
 // #define COMPILE_CHASSIS_AGV
@@ -23,7 +23,7 @@
 // #define COMPILE_GIMBAL
 
 //哨兵云台
- #define SENTRY_GIMBAL_DEV
+ //#define SENTRY_GIMBAL_DEV
 
 //底盘-笨笨（对的，笨笨的官方英文名叫DOGS）
 // #define COMPILE_CHASSIS_DOGS
