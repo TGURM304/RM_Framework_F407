@@ -34,7 +34,9 @@ DJIMotor m_yaw(
 void app_gimbal_init() {
 	m_yaw.init();
 }
-
+/*
+ * 调试用接口，使用串口修改速度环PID参数
+ */
 void set_target(bsp_uart_e e, uint8_t *s, uint16_t l) {
 	float P,I,D;
 	sscanf((char *) s, "%f,%f,%f", &P, &I, &D);
@@ -72,9 +74,9 @@ void chassis_callback(bsp_can_msg_t *msg) {
 
 void app_gimbal_task(void *argument) {
 	while(!app_sys_ready()) OS::Task::SleepMilliseconds(10);
-	bsp_uart_set_callback(E_UART_DEBUG, set_target);
 
-
+	//调试接口，现已注释
+	/*bsp_uart_set_callback(E_UART_DEBUG, set_target);*/
 
 	motor.reset();
 	OS::Task::SleepMilliseconds(50);

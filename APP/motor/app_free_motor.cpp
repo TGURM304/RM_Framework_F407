@@ -15,6 +15,10 @@ static auto ins = INS::data();
 double last_speed = 0;
 double last_degrees = 0;
 int count = 0;
+
+/*
+ * 在PID基础上添加了前馈的代码，实现了更快的响应
+ */
 double PID_forward_feed(double current_degree, double set_degree) {
 	set_speed = yaw_degrees.update(current_degree,set_degree);
 	set_speed += (set_degree - last_degrees)*10;//角度输出速度的一阶前馈
