@@ -1,4 +1,4 @@
-#THIS FILE IS AUTO GENERATED FROM THE TEMPLATE! DO NOT CHANGE!
+#此文件从模板自动生成! 请勿更改!
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_VERSION 1)
 cmake_minimum_required(VERSION 3.29)
@@ -73,7 +73,7 @@ recursion_include(${CMAKE_SOURCE_DIR}/APP)
 recursion_include(${CMAKE_SOURCE_DIR}/Components)
 recursion_include(${CMAKE_SOURCE_DIR}/External/Include)
 
-add_compile_options(-Werror)
+add_compile_options(-Werror -Wno-psabi)
 
 # CMSIS-DSP
 include_directories(CMSIS-DSP/Include CMSIS-DSP/PrivateInclude)
