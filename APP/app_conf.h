@@ -14,7 +14,7 @@
 // #define COMPILE_CHASSIS_MECANUM
 
 // 底盘 - 全向轮
-//#define COMPILE_CHASSIS_OMNI
+#define COMPILE_CHASSIS_OMNI
 
 // 底盘 - 舵轮
 // #define COMPILE_CHASSIS_AGV

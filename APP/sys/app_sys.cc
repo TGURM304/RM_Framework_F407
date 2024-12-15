@@ -23,6 +23,7 @@
 #include "bsp_def.h"
 
 #include "app_msg.h"
+#include "bsp_buzzer.h"
 
 bool inited_ = false;
 
@@ -47,10 +48,12 @@ void app_sys_init() {
 
 // 放一些系统级任务
 void app_sys_task() {
+	bsp_buzzer_flash(1978, 0.5, 250, 1, 0);
     bsp_led_set(0, 0, 255);
     app_sys_init();
     bsp_led_set(0, 255, 0);
     while(!INS::ready()) OS::Task::SleepMilliseconds(1);
+	bsp_buzzer_flash(1978, 0.5, 125, 2, 100);
     uint8_t count = 0;
     while(true) {
         if(++count == 10) {
