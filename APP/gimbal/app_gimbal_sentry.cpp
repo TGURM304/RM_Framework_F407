@@ -143,10 +143,10 @@ void app_gimbal_task(void *argument) {
 		//发送双板通信数据
 		msg_mcu_send_g();
 		//防止数据超过设定范围
-		yaw -= (float)data_rx_chassis.tran_msg[0]/1000.0f;
+		yaw -= (float)data_rx_chassis.tran_msg[0]/1400.0f;
 		if(yaw > 360) yaw -= 360;
 		if(yaw < -360) yaw += 360;
-		pitch -= (float)data_rx_chassis.tran_msg[1]/5000.0f;
+		pitch += (float)data_rx_chassis.tran_msg[1]/2000.0f;
 		if(pitch > PITCH_MAX) pitch = PITCH_MAX;
 		if(pitch < PITCH_MIN) pitch = PITCH_MIN;
 
@@ -154,14 +154,25 @@ void app_gimbal_task(void *argument) {
 
 		m_yaw.update(static_cast <float> (filter_sum / 10));
 
-		left_shoot_boost_up.target = -7000;
-		left_shoot_boost_down.target = 7000;
+
 		if(data_rx_chassis.tran_msg[2] == 1) {
 			left_shoot_trigger.target = -1500;
+
+			left_shoot_boost_up.target = -7000;
+			left_shoot_boost_down.target = 7000;
 		}
-		else left_shoot_trigger.device()->update(0);
+		else
+		{
+			left_shoot_trigger.device()->update(0);
+
+			left_shoot_boost_up.target=0;
+			left_shoot_boost_down.target=0;
+		}
 		//调试云台所用调试接口，输出云台角度和速度波形
 		app_msg_vofa_send(E_UART_DEBUG, {
+		                                    (float)(filter_sum / 10),
+		                                    (float)m_yaw.status.angle,
+
 			rc->rc_r[0]/5.0,
 			ins->yaw,
 			ins->dt_yaw*1000,
