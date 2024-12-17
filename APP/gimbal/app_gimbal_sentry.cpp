@@ -34,9 +34,35 @@ DJIMotor m_yaw(
 	{ .id = 0x01, .port = E_CAN2, .mode = DJIMotor::VOLTAGE }
 );
 
-void app_gimbal_init() {
-	m_yaw.init();
-}
+MotorController<DJIMotor> left_shoot_trigger(
+	"left_trigger",
+	DJIMotor::M2006,
+	{.id = 0x07,.port = E_CAN1,.mode = DJIMotor::CURRENT
+	},
+	PID_SPEED,
+{ .Kp = 10.0, .Ki = 1.0, .Kd = 0.0, .out_limit = 25000, .iout_limit = 20000 },
+{ .Kp = 0.0, .Ki = 0.0, .Kd = 0.0, .out_limit = 15, .iout_limit = 1 }
+);
+
+MotorController<DJIMotor> left_shoot_boost_up(
+	"left_shoot_boost_up",
+	DJIMotor::M3508,
+	{.id = 0x04,.port = E_CAN1,.mode = DJIMotor::CURRENT
+	},
+	PID_SPEED,
+{ .Kp = 15.0, .Ki = 1.0, .Kd = 0.0, .out_limit = 25000, .iout_limit = 20000 },
+{ .Kp = 0.0, .Ki = 0.0, .Kd = 0.0, .out_limit = 15, .iout_limit = 1 }
+);
+MotorController<DJIMotor> left_shoot_boost_down(
+	"left_shoot_boost_down",
+	DJIMotor::M3508,
+	{.id = 0x01,.port = E_CAN1,.mode = DJIMotor::CURRENT
+	},
+	PID_SPEED,
+{ .Kp = 15.0, .Ki = 1.0, .Kd = 0.0, .out_limit = 25000, .iout_limit = 20000 },
+{ .Kp = 0.0, .Ki = 0.0, .Kd = 0.0, .out_limit = 15, .iout_limit = 1 }
+);
+
 
 /*
  * 调试用接口，使用串口修改速度环PID参数
@@ -94,7 +120,12 @@ void gimbal_control(float target_pitch, float target_yaw) {
 	filter_sum += (filter[ptr] = PID_forward_feed(0, delta_yaw));
 	m_pitch.control(target_pitch/360*3.14, PITCH_SPEED);
 }
-
+void app_gimbal_init() {
+	m_yaw.init();
+	left_shoot_trigger.init();
+	left_shoot_boost_up.init();
+	left_shoot_boost_down.init();
+}
 void app_gimbal_task(void *argument) {
 	while(!app_sys_ready()) OS::Task::SleepMilliseconds(10);
 
@@ -112,7 +143,7 @@ void app_gimbal_task(void *argument) {
 		//发送双板通信数据
 		msg_mcu_send_g();
 		//防止数据超过设定范围
-		yaw -= (float)data_rx_chassis.tran_msg[0]/3000.0f;
+		yaw -= (float)data_rx_chassis.tran_msg[0]/1000.0f;
 		if(yaw > 360) yaw -= 360;
 		if(yaw < -360) yaw += 360;
 		pitch -= (float)data_rx_chassis.tran_msg[1]/5000.0f;
@@ -123,13 +154,19 @@ void app_gimbal_task(void *argument) {
 
 		m_yaw.update(static_cast <float> (filter_sum / 10));
 
+		left_shoot_boost_up.target = -7000;
+		left_shoot_boost_down.target = 7000;
+		if(data_rx_chassis.tran_msg[2] == 1) {
+			left_shoot_trigger.target = -1500;
+		}
+		else left_shoot_trigger.device()->update(0);
 		//调试云台所用调试接口，输出云台角度和速度波形
-		/*app_msg_vofa_send(E_UART_DEBUG, {
+		app_msg_vofa_send(E_UART_DEBUG, {
 			rc->rc_r[0]/5.0,
 			ins->yaw,
 			ins->dt_yaw*1000,
 			set_speed
-		});*/
+		});
 		OS::Task::SleepMilliseconds(1);
 	}
 }

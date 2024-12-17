@@ -23,7 +23,7 @@ static uint8_t can_tx_buf[BSP_CAN_ENUM_SIZE][ctrl_id_map_size + 1][8];
 static bool ctrl_id_used[BSP_CAN_ENUM_SIZE][ctrl_id_map_size + 1];
 
 DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) {
-    BSP_ASSERT(model == GM6020 or model == M3508);
+    BSP_ASSERT(model == GM6020 or model == M3508 or model == M2006);
     BSP_ASSERT(0 <= param.port and param.port < BSP_CAN_ENUM_SIZE);
 
     // Init Motor Param
