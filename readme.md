@@ -1,9 +1,18 @@
 # RM_Framework_F407
 
+### Todo
+
+- [ ] 加入上位机通信支持
+- [ ] 调整 `debug` 策略
+- [ ] 优化 `alg_pid`
+- [ ] 优化 `app_ins`
+- [ ] 重构 `app_motor`，使其控制更灵活
+
 ### Note
 
 - 该项目依赖大疆 C 型开发板，如需使用其他开发板请自行移植。
 - 请不要在 `Core` 目录下实现过多代码，否则会造成不必要的麻烦。
+- 对于大多使用场景，你只需要完善 `app_gimbal` 和 `app_chassis`，即可实现基本的控制。
 
 ### 项目架构
 
@@ -44,9 +53,18 @@
 ```c++
 bsp_rc_init();
 bsp_led_init();
+bsp_buzzer_init();
 bsp_led_set(255, 0, 0);
 bsp_can_init(E_CAN1, &hcan1);
 bsp_can_init(E_CAN2, &hcan2);
 bsp_uart_init(E_UART_DEBUG, &huart1);
 ```
 - 检查无误后编译运行。
+
+### 系统状态指示
+
+上电后 `led` 亮红灯，进入 `FreeRTOS` 后变为蓝灯，且蜂鸣器响一声。
+
+陀螺仪校准过程中绿灯常亮，此时需保持静止，若校准误差过大则自动载入预设误差值（不保证稳定）。
+
+校准完成后蜂鸣器连续响两声，此后 `led` 变为白色呼吸灯表示系统正常工作。
