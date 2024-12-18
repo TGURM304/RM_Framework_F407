@@ -9,6 +9,7 @@
 #define MOTOR_CONTROLLER_LIMIT 16
 
 typedef enum {
+    PID_NONE  = 0b00,
     PID_SPEED = 0b01,
     PID_ANGLE = 0b10
 } app_motor_ctrl_e;
@@ -35,6 +36,7 @@ public:
     bool reverse = false;               // reverse，启用后会翻转电机速度正方向（仅适用于单速度环控制模式）
     bool use_ext_angle = false;         // Extra angle，启用后会计算总角度，且依靠总角度闭环
     bool use_degree_angle = false;      // Degree angle，启用后会以 encoder_zero 为零点将电机角度映射到 [0, 360) (deg) 范围，逆时针为正方向（若电反装则为顺时针）
+    float extra_output = 0;
     DJIMotor *device() { return &motor_; };
 
 private:

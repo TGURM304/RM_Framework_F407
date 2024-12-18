@@ -19,6 +19,7 @@ namespace Algorithm {
             DELTA
         } pid_type_e;
         typedef struct {
+            pid_type_e type;
             double Kp, Ki, Kd, out_limit, iout_limit;
         } pid_param_t;
         PID() : Kp_(0), Ki_(0), Kd_(0), out_limit_(0), iout_limit_(0), type_(POSITION) {}
@@ -32,7 +33,8 @@ namespace Algorithm {
             Kp_ = Kp, Ki_ = Ki, Kd_ = Kd, out_limit_ = out_limit, iout_limit_ = iout_limit; this->clear();
         }
         void set_para(const pid_param_t &param) {
-            Kp_ = param.Kp, Ki_ = param.Ki, Kd_ = param.Kd, out_limit_ = param.out_limit, iout_limit_ = param.iout_limit; this->clear();
+            Kp_ = param.Kp, Ki_ = param.Ki, Kd_ = param.Kd, out_limit_ = param.out_limit, iout_limit_ = param.iout_limit, type_ = param.type;
+            this->clear();
         }
       private:
         pid_type_e type_;

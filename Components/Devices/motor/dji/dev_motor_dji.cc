@@ -22,8 +22,8 @@ static uint8_t device_cnt[BSP_CAN_ENUM_SIZE];
 static uint8_t can_tx_buf[BSP_CAN_ENUM_SIZE][ctrl_id_map_size + 1][8];
 static bool ctrl_id_used[BSP_CAN_ENUM_SIZE][ctrl_id_map_size + 1];
 
-DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) {
-    BSP_ASSERT(model == GM6020 or model == M3508);
+DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) : model_(model), param_(param) {
+    BSP_ASSERT(model == GM6020 or model == M3508 or model == M2006);
     BSP_ASSERT(0 <= param.port and param.port < BSP_CAN_ENUM_SIZE);
 
     // Init Motor Param
@@ -39,7 +39,7 @@ DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) {
         }
         feedback_id = 0x204 + param.id;
     }
-    if(model == M3508) {
+    if(model == M3508 || model == M2006) {
         BSP_ASSERT(1 <= param.id and param.id <= 8);
         // WARNING: M3508 (C620) 仅支持电流控制模式，请不要填写 VOLTAGE 迷惑自己，为了保证一致性，这将导致下面的 ASSERT 死循环。
         BSP_ASSERT(param.mode == CURRENT);
@@ -47,8 +47,6 @@ DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) {
         feedback_id = 0x200 + param.id;
     }
 
-    model_ = model;
-    param_ = param;
     device_ptr[param.port][device_cnt[param.port] ++] = this;
     ctrl_id_used[param.port][id_trans(ctrl_id)] = true;
 }

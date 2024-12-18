@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "app_conf.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

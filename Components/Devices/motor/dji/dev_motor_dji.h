@@ -37,7 +37,7 @@ public:
     };
 
     enum Model {
-        MODEL_DEFAULT, GM6020, M3508
+        MODEL_DEFAULT, GM6020, M3508, M2006
     };
 
     struct Param {
@@ -66,7 +66,7 @@ public:
 private:
     Model model_ = MODEL_DEFAULT;
     Param param_ = Param();
-    bool enabled = false;
+    bool enabled = true;
 };
 
 #ifdef __cplusplus

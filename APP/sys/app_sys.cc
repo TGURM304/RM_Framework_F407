@@ -16,6 +16,7 @@
 #include "app_chassis.h"
 #include "app_gimbal.h"
 #include "app_conf.h"
+#include "bsp_buzzer.h"
 
 #include <cstdio>
 #include <cmath>
@@ -35,7 +36,7 @@ int8_t r = 0, g = 0, b = 0;
 void app_sys_init() {
     INS::init();
 
-#if defined(COMPILE_CHASSIS_MECANUM) || defined(COMPILE_CHASSIS_OMNI) || defined(COMPILE_CHASSIS_AGV)
+#if defined(COMPILE_CHASSIS)
     app_chassis_init();
 #endif
 #ifdef COMPILE_GIMBAL
@@ -47,10 +48,14 @@ void app_sys_init() {
 
 // 放一些系统级任务
 void app_sys_task() {
+    bsp_buzzer_flash(1976, 0.02, 250);
     bsp_led_set(0, 0, 255);
     app_sys_init();
     bsp_led_set(0, 255, 0);
     while(!INS::ready()) OS::Task::SleepMilliseconds(1);
+    bsp_buzzer_flash(1976, 0.02, 125);
+    OS::Task::SleepMilliseconds(50);
+    bsp_buzzer_flash(1976, 0.02, 125);
     uint8_t count = 0;
     while(true) {
         if(++count == 10) {

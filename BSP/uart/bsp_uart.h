@@ -17,8 +17,7 @@ extern "C" {
 typedef enum {
     E_UART_DEBUG, // E_UART1
     E_UART_RC,
-    E_UART2_485,
-    E_UART3_485,
+    E_UART_VISION,
     E_UART_END
 } bsp_uart_e;
 

@@ -4,12 +4,14 @@
 
 #pragma once
 
+#include "app_conf.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void app_gimbal_init();
-void app_gimbal_task(void *argument);
+void app_gimbal_task(void *args);
 
 #ifdef __cplusplus
 }

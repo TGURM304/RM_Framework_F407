@@ -11,6 +11,6 @@
 
 #define APP_MSG_VOFA_CHANNEL_LIMIT 10
 
-void app_msg_vofa_send(bsp_uart_e e, std::initializer_list <float> f);
+void app_msg_vofa_send(bsp_uart_e e, std::initializer_list <double> f);
 
 #endif //APP_MSG_H
