@@ -56,16 +56,12 @@ void app_sys_task() {
     bsp_buzzer_flash(1976, 0.02, 125);
     OS::Task::SleepMilliseconds(50);
     bsp_buzzer_flash(1976, 0.02, 125);
-    uint8_t count = 0;
     while(true) {
-        if(++count == 10) {
-            bsp_led_set(std::abs(r), std::abs(g), std::abs(b));
-            if(++ r > 50) r = -50;
-            if(++ g > 50) g = -50;
-            if(++ b > 50) b = -50;
-            count = 0;
-        }
-        OS::Task::SleepMilliseconds(1);
+        bsp_led_set(std::abs(r), std::abs(g), std::abs(b));
+        if(++ r > 50) r = -50;
+        if(++ g > 50) g = -50;
+        if(++ b > 50) b = -50;
+        OS::Task::SleepMilliseconds(10);
     }
 }
 
