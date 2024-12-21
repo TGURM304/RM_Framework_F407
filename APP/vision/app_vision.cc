@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <cmath>
 
 #include "app_ins.h"
 #include "bsp_uart.h"
@@ -22,7 +23,6 @@ void uart_rx_callback(bsp_uart_e e, uint8_t *s, uint16_t l) {
 }
 
 void vision::init() {
-    bsp_uart_init(E_UART_VISION, &huart10);
     bsp_uart_set_callback(E_UART_VISION, uart_rx_callback);
 }
 
