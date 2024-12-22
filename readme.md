@@ -50,6 +50,14 @@ bsp_can_init(E_CAN1, &hcan1);
 bsp_can_init(E_CAN2, &hcan2);
 bsp_uart_init(E_UART_DEBUG, &huart1);
 ```
+- 在`Core/Src/main.c`的`/* USER CODE BEGIN Includes */`下添加
+```c++
+#include "bsp_rc.h"
+#include "bsp_led.h"
+#include "bsp_buzzer.h"
+#include "bsp_can.h"
+#include "bsp_uart.h"
+```
 - 检查无误后编译运行。
 
 
@@ -79,3 +87,15 @@ bsp_uart_init(E_UART_DEBUG, &huart1);
 ### 1.优化了云台控制，集成至gimbal_control函数中，实现输入目标yaw和目标pitch完成控制
 ### 2.添加了大喵电机MIT模式的防呆，防止大喵MIT模式疯掉
 ### 3.修改部分app_gimbal_sentry.app的部分命名规范
+
+## v0.3---24/12/16
+## updater: KL_normal
+### 1.新开了shoot子任务，并添加了云台拨弹电机的控制与两个摩擦轮电机的控制
+### 2.增高了yaw轴电机控制灵敏度
+
+## v0.4---24/12/17
+## updater: mc3545dada
+### 1.改进了合适的yaw轴和pitch轴灵敏度，使其不会卡bug堵转
+### 2.调整摩擦轮和拨弹盘一起收拨杆按钮控制
+
+
