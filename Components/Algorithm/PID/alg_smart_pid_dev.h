@@ -13,7 +13,8 @@ typedef  enum {
 	Trapezoid_Integral = 0x02,			//梯形积分
 	OutputFilter = 0x04,                //输出滤波
 	ChangingIntegralRate = 0x08,        //变积分，变积分函数输出修正系数0~1，实现积分的平缓化
-	IntegralSaturate = 0x10				//积分抗饱和
+	IntegralSaturate = 0x10,    		//积分抗饱和
+	DeltaLimit = 0x20					//变化幅度限幅
 }control_mode_e;
 enum {
 	Disable,
@@ -23,7 +24,7 @@ class PID {
 	public:
 	PID();
 	PID(float p, float i, float d);
-	PID(float p, float i, float d, float max_sum, float max_i,
+	PID(float p, float i, float d, float max_sum, float max_i, float delta,
 		uint16_t ctr,
 		float (*f)(float err), float (*flt)(float output));
 
@@ -36,7 +37,8 @@ class PID {
 	float I_max,Sum_max;
 	float input, last_input;
 	float err, last_err;
-	float sum;
+	float sum, last_sum;
+	float delta_max;
 	float out_put,active_flag;
 	float (*changing_integral)(float err);
 	float (*filter)(float output);

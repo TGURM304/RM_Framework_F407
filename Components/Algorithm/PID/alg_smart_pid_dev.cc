@@ -4,6 +4,8 @@
 
 #include "alg_smart_pid_dev.h"
 
+#include <cmath>
+
 using namespace Smart_PID;
 
 PID::PID() {
@@ -18,7 +20,7 @@ PID::PID(float p, float i, float d) {
 	Kd = d;
 	active_flag = Enable;
 }
-PID::PID(float p, float i, float d, float max_sum, float max_i, uint16_t ctr, float (*f)(float err), float (*flt)(float output)) {
+PID::PID(float p, float i, float d, float max_sum, float max_i, float delta, uint16_t ctr, float (*f)(float err), float (*flt)(float output)) {
 	Kp = p;
 	Ki = i;
 	Kd = d;
@@ -27,6 +29,7 @@ PID::PID(float p, float i, float d, float max_sum, float max_i, uint16_t ctr, fl
 	ctr_code = ctr;
 	changing_integral = f;
 	filter = flt;
+	delta_max = delta;
 	active_flag = Enable;
 }
 
@@ -80,6 +83,7 @@ float PID::Smart_PID_calculate(float current, float target) {
 	}
 	else D_out = ( err - last_err)*Kd;
 
+	last_sum = sum;
 	sum = P_out + I_out + D_out;
 	if(Sum_max != 0) {//如果Sum_max！=0 视为启用输出限幅
 		if(sum > Sum_max)
@@ -89,7 +93,10 @@ float PID::Smart_PID_calculate(float current, float target) {
 	}
 	if(ctr_code & OutputFilter)//输出滤波
 		sum = filter(sum);
-
+	if(ctr_code & DeltaLimit) {//使用改变限幅
+		if(last_sum - sum > delta_max) sum = last_sum -delta_max;
+		else if(last_sum - sum < -delta_max) sum = last_sum +delta_max;
+	}
 	out_put = sum;
 	return out_put;
 }
