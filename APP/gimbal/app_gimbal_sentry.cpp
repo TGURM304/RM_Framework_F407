@@ -172,3 +172,44 @@ void app_gimbal_task(void *argument) {
 }
 
 #endif
+/*//smart_pid test
+#include "alg_smart_pid_dev.h"
+
+DJIMotor test_motor(
+	"gimbal_yaw",
+	DJIMotor::GM6020,
+	{ .id = 0x01, .port = E_CAN1, .mode = DJIMotor::VOLTAGE }
+);
+
+float voltage = 0;
+void app_gimbal_init() {
+	test_motor.init();
+}
+float out_put = 0;
+float test_changing_integral(float err) {
+	if(err >= 20)
+		return 0;
+	return 1;
+}
+float test_filter_output(float outPut) {
+	return 0;
+}
+
+Smart_PID::PID pid_test(0,1,0,10000,0,
+	Smart_PID::OutputFilter,
+	test_changing_integral,test_filter_output);
+
+void app_gimbal_task(void *argument) {
+	while(!app_sys_ready()) OS::Task::SleepMilliseconds(10);
+	uint8_t temp = 0;
+	app_gimbal_init();
+	OS::Task::SleepSeconds(1);
+	while(true) {
+		app_msg_vofa_send(E_UART_DEBUG, {
+			(float)test_motor.feedback_.speed,
+			50.0f
+		});
+		test_motor.update(pid_test.Smart_PID_calculate(test_motor.feedback_.speed,100));
+		OS::Task::SleepMilliseconds(1);
+	}
+}*/
