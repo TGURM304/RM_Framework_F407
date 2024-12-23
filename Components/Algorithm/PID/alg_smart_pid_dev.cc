@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#include "bsp_def.h"
+
 using namespace Smart_PID;
 
 PID::PID() {
@@ -59,6 +61,7 @@ float PID::Smart_PID_calculate(float current, float target) {
 	Last_I_out = I_out;
 	if(ctr_code & ChangingIntegralRate)//如果使用了变积分函数
 	{
+		BSP_ASSERT(changing_integral != nullptr)
 		if(err * Last_I_out > 0)//判断当前积分是否为积累趋势。
 			I_out += err*Ki*changing_integral(err);
 	}
@@ -91,8 +94,11 @@ float PID::Smart_PID_calculate(float current, float target) {
 		else if(sum < -Sum_max)
 			sum = -Sum_max;
 	}
-	if(ctr_code & OutputFilter)//输出滤波
+	if(ctr_code & OutputFilter) {
+		//输出滤波
+		BSP_ASSERT(filter != nullptr);
 		sum = filter(sum);
+	}
 	if(ctr_code & DeltaLimit) {//使用改变限幅
 		if(last_sum - sum > delta_max) sum = last_sum -delta_max;
 		else if(last_sum - sum < -delta_max) sum = last_sum +delta_max;

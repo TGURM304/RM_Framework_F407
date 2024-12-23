@@ -50,7 +50,7 @@ MotorController<DJIMotor> left_shoot_boost_up(
 	{.id = 0x04,.port = E_CAN1,.mode = DJIMotor::CURRENT
 	},
 	PID_SPEED,
-{ .Kp = 15.0, .Ki = 1.0, .Kd = 0.0, .out_limit = 25000, .iout_limit = 20000 },
+{ .Kp = 20.0, .Ki = 0.5, .Kd = 0.0, .out_limit = 25000, .iout_limit = 20000 },
 { .Kp = 0.0, .Ki = 0.0, .Kd = 0.0, .out_limit = 15, .iout_limit = 1 }
 );
 MotorController<DJIMotor> left_shoot_boost_down(
@@ -59,7 +59,7 @@ MotorController<DJIMotor> left_shoot_boost_down(
 	{.id = 0x01,.port = E_CAN1,.mode = DJIMotor::CURRENT
 	},
 	PID_SPEED,
-{ .Kp = 15.0, .Ki = 1.0, .Kd = 0.0, .out_limit = 25000, .iout_limit = 20000 },
+{ .Kp = 20.0, .Ki = 0.5, .Kd = 0.0, .out_limit = 25000, .iout_limit = 20000 },
 { .Kp = 0.0, .Ki = 0.0, .Kd = 0.0, .out_limit = 15, .iout_limit = 1 }
 );
 
@@ -146,37 +146,30 @@ void app_gimbal_task(void *argument) {
 		yaw -= (float)data_rx_chassis.tran_msg[0]/1400.0f;
 		if(yaw > 360) yaw -= 360;
 		if(yaw < -360) yaw += 360;
-		pitch += (float)data_rx_chassis.tran_msg[1]/2000.0f;
+		pitch -= (float)data_rx_chassis.tran_msg[1]/2000.0f;
 		if(pitch > PITCH_MAX) pitch = PITCH_MAX;
 		if(pitch < PITCH_MIN) pitch = PITCH_MIN;
 
-		gimbal_control(pitch, yaw);//云台控制函数
+		/*gimbal_control(pitch, yaw);//云台控制函数
 
-		m_yaw.update(static_cast <float> (filter_sum / 10));
-
+		m_yaw.update(static_cast <float> (filter_sum / 10));*/
 
 		if(data_rx_chassis.tran_msg[2] == 1) {
-			left_shoot_trigger.target = -1500;
-
-			left_shoot_boost_up.target = -7000;
-			left_shoot_boost_down.target = 7000;
+			//left_shoot_trigger.target = -1500;
+            left_shoot_boost_up.target = -8000;
+            left_shoot_boost_down.target = 8000;
 		}
 		else
 		{
 			left_shoot_trigger.device()->update(0);
-
 			left_shoot_boost_up.target=0;
 			left_shoot_boost_down.target=0;
 		}
 		//调试云台所用调试接口，输出云台角度和速度波形
 		app_msg_vofa_send(E_UART_DEBUG, {
-		                                    (float)(filter_sum / 10),
-		                                    (float)m_yaw.status.angle,
-
-			rc->rc_r[0]/5.0,
-			ins->yaw,
-			ins->dt_yaw*1000,
-			set_speed
+			left_shoot_boost_down.speed,
+			left_shoot_boost_up.speed,
+			8000.0f
 		});
 		OS::Task::SleepMilliseconds(1);
 	}
