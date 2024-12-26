@@ -14,7 +14,7 @@ typedef struct {
 } bsp_imu_raw_data_t;
 
 void bsp_imu_init();
-bsp_imu_raw_data_t *bsp_imu_read();
+void bsp_imu_read(bsp_imu_raw_data_t *data);
 
 #ifdef __cplusplus
 }

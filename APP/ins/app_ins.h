@@ -3,10 +3,12 @@
 //
 
 #pragma once
+#include "bsp_imu.h"
 
 namespace INS {
     struct ins_data_t {
-        float yaw, pitch, roll, imu_temp;
+        bsp_imu_raw_data_t raw;
+        float yaw, pitch, roll;
     };
     ins_data_t *data();
     void init();

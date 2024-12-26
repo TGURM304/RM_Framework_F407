@@ -5,11 +5,8 @@
 #include "bsp_imu.h"
 #include "BMI088driver.h"
 
-static bsp_imu_raw_data_t raw_data;
-
-bsp_imu_raw_data_t *bsp_imu_read() {
-    BMI088_read(raw_data.gyro, raw_data.accel, &raw_data.temp);
-    return &raw_data;
+void bsp_imu_read(bsp_imu_raw_data_t *data) {
+    BMI088_read(data->gyro, data->accel, &data->temp);
 }
 
 void bsp_imu_init() {

@@ -45,18 +45,17 @@ namespace INS {
         uint16_t count = 0, freq_cnt = 0;
         float gyro_err[3] = {0, 0, 0};
         while(true) {
-            bsp_imu_raw_data_t *raw_data = bsp_imu_read();
-            data_.imu_temp = raw_data->temp;
+            bsp_imu_read(&data_.raw);
 
             if(++freq_cnt == 100) __HAL_TIM_SetCompare(IMU_TEMPERATURE_CONTROL_TIMER, IMU_TEMPERATURE_CONTROL_CHANNEL,
-                std::max(0.0, temp_pid.update(data_.imu_temp, 40))), freq_cnt = 0;
+                std::max(0.0, temp_pid.update(data_.raw.temp, 40))), freq_cnt = 0;
 
             if(imu_state == 0) {
-                count += (std::abs(data_.imu_temp - 40) < 0.5f);
+                count += (std::abs(data_.raw.temp - 40) < 0.5f);
                 if(count == TEMPERATURE_COUNT) imu_state = 1, count = 0;
             } else if(imu_state == 1) {
                 count ++;
-                gyro_err[0] += raw_data->gyro[0], gyro_err[1] += raw_data->gyro[1], gyro_err[2] += raw_data->gyro[2];
+                gyro_err[0] += data_.raw.gyro[0], gyro_err[1] += data_.raw.gyro[1], gyro_err[2] += data_.raw.gyro[2];
                 if(count == ERR_TEST_COUNT) {
                     gyro_err[0] /= (float) count, gyro_err[1] /= (float) count, gyro_err[2] /= (float) count;
                     if(std::abs(gyro_err[0]) > GYRO_ERR_THRESHOLD or std::abs(gyro_err[1]) > GYRO_ERR_THRESHOLD or std::abs(gyro_err[2]) > GYRO_ERR_THRESHOLD) {
@@ -66,19 +65,19 @@ namespace INS {
                 }
             } else if(imu_state == 2) {
                 float gyro[3] = {
-                    raw_data->gyro[0] - gyro_err[0],
-                    raw_data->gyro[1] - gyro_err[1],
-                    raw_data->gyro[2] - gyro_err[2]
+                    data_.raw.gyro[0] - gyro_err[0],
+                    data_.raw.gyro[1] - gyro_err[1],
+                    data_.raw.gyro[2] - gyro_err[2]
                 };
                 // CHEAT: 忽略极小的变化，借此尽可能消除零漂
                 if(std::abs(gyro[2]) < 0.1f) gyro[2] = 0;
                 IMU_QuaternionEKF_Update(
                     gyro[0], gyro[1], gyro[2],
-                    raw_data->accel[0], raw_data->accel[1], raw_data->accel[2]
+                    data_.raw.accel[0], data_.raw.accel[1], data_.raw.accel[2]
                 );
                 Mahony_update(
                     gyro[0], gyro[1], gyro[2],
-                    raw_data->accel[0], raw_data->accel[1], raw_data->accel[2],
+                    data_.raw.accel[0], data_.raw.accel[1], data_.raw.accel[2],
                     0, 0, 0
                 );
                 data_.pitch = Get_Pitch(), data_.roll = Get_Roll(), data_.yaw = Get_Yaw();
