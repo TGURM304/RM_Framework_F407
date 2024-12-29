@@ -22,18 +22,12 @@ void app_gimbal_task(void *args) {
     while(!app_sys_ready()) OS::Task::SleepMilliseconds(10);
 
     while(true) {
-        vision::send(1, false);
-        app_msg_vofa_send(E_UART_DEBUG, {
-            vision::recv()->x,
-            vision::recv()->y,
-            vision::recv()->z,
-        });
         OS::Task::SleepMilliseconds(2);
     }
 }
 
 void app_gimbal_init() {
-    vision::init();
+
 }
 
 #endif
