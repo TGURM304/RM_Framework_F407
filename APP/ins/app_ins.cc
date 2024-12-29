@@ -24,6 +24,9 @@
 // 观测误差阈值，若误差过大则使用 gyro_std_err，从而避免不受限制的误差积累
 #define GYRO_ERR_THRESHOLD 0.01
 
+// Yaw Cheat Threshold (忽略极小的变化，借此尽可能消除零漂)
+#define GYRO_YAW_CHEAT_THRESHOLD 0.01
+
 // 标准误差，需要在静止状态下观测较长时间得到，且通常环境变化或传感器变化后需要重新观测
 const float gyro_std_err[3] = { 0.00342450268, -0.00207025907, -0.0056360052 };
 
@@ -70,7 +73,7 @@ namespace INS {
                     data_.raw.gyro[2] - gyro_err[2]
                 };
                 // CHEAT: 忽略极小的变化，借此尽可能消除零漂
-                if(std::abs(gyro[2]) < 0.1f) gyro[2] = 0;
+                if(std::abs(gyro[2]) < GYRO_YAW_CHEAT_THRESHOLD) gyro[2] = 0;
                 IMU_QuaternionEKF_Update(
                     gyro[0], gyro[1], gyro[2],
                     data_.raw.accel[0], data_.raw.accel[1], data_.raw.accel[2]
