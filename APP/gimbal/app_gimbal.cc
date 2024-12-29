@@ -22,7 +22,7 @@ void app_gimbal_task(void *args) {
     while(!app_sys_ready()) OS::Task::SleepMilliseconds(10);
 
     while(true) {
-        OS::Task::SleepMilliseconds(2);
+        OS::Task::SleepMilliseconds(1);
     }
 }
 
