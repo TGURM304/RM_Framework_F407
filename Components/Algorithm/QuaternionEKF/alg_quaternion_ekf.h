@@ -13,19 +13,10 @@
 #ifndef _QUAT_EKF_H
 #define _QUAT_EKF_H
 #include "alg_kalman_filter.h"
+#include <tuple>
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-
-/* boolean type definitions */
-#ifndef TRUE
-#define TRUE 1 /**< boolean true  */
-#endif
-
-#ifndef FALSE
-#define FALSE 0 /**< boolean fails */
 #endif
 
 typedef struct
@@ -78,9 +69,7 @@ void IMU_QuaternionEKF_Init(float process_noise1, float process_noise2, float me
 void IMU_QuaternionEKF_Update(float gx, float gy, float gz, float ax, float ay, float az);
 void IMU_QuaternionEKF_Reset();
 
-float Get_Pitch();
-float Get_Roll();
-float Get_Yaw();
+std::tuple <float, float, float> IMU_QuaternionEKF_Data();
 
 #ifdef __cplusplus
 }

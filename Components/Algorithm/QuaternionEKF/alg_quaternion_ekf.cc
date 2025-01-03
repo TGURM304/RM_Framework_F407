@@ -16,8 +16,6 @@
 #include "alg_quaternion_ekf.h"
 #include "arm_math.h"
 
-#include "alg_utils.h"
-
 QEKF_INS_t QEKF_INS={0};
 
 const float IMU_QuaternionEKF_F[36] = {1, 0, 0, 0, 0, 0,
@@ -92,8 +90,8 @@ void IMU_QuaternionEKF_Init(float process_noise1, float process_noise2, float me
     QEKF_INS.IMU_QuaternionEKF.User_Func3_f = IMU_QuaternionEKF_xhatUpdate;
 
     // 设定标志位,用自定函数替换kf标准步骤中的SetK(计算增益)以及xhatupdate(后验估计/融合)
-    QEKF_INS.IMU_QuaternionEKF.SkipEq3 = TRUE;
-    QEKF_INS.IMU_QuaternionEKF.SkipEq4 = TRUE;
+    QEKF_INS.IMU_QuaternionEKF.SkipEq3 = true;
+    QEKF_INS.IMU_QuaternionEKF.SkipEq4 = true;
 
     memcpy(QEKF_INS.IMU_QuaternionEKF.F_data, IMU_QuaternionEKF_F, sizeof(IMU_QuaternionEKF_F));
     memcpy(QEKF_INS.IMU_QuaternionEKF.P_data, IMU_QuaternionEKF_P, sizeof(IMU_QuaternionEKF_P));
@@ -113,8 +111,8 @@ void IMU_QuaternionEKF_Reset(void)
     QEKF_INS.IMU_QuaternionEKF.xhat_data[3] = 0;
 
     // 设定标志位,用自定函数替换kf标准步骤中的SetK(计算增益)以及xhatupdate(后验估计/融合)
-    QEKF_INS.IMU_QuaternionEKF.SkipEq3 = TRUE;
-    QEKF_INS.IMU_QuaternionEKF.SkipEq4 = TRUE;
+    QEKF_INS.IMU_QuaternionEKF.SkipEq3 = true;
+    QEKF_INS.IMU_QuaternionEKF.SkipEq4 = true;
 
     memcpy(QEKF_INS.IMU_QuaternionEKF.F_data, IMU_QuaternionEKF_F, sizeof(IMU_QuaternionEKF_F));
     memcpy(QEKF_INS.IMU_QuaternionEKF.P_data, IMU_QuaternionEKF_P, sizeof(IMU_QuaternionEKF_P));
@@ -420,7 +418,7 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
         {
             // 滤波器发散
             QEKF_INS.ConvergeFlag = 0;
-            kf->SkipEq5 = FALSE; // step-5 is cov mat P updating
+            kf->SkipEq5 = false; // step-5 is cov mat P updating
         }
         else
         {
@@ -429,7 +427,7 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
             //  P(k) = P'(k)
             memcpy(kf->xhat_data, kf->xhatminus_data, sizeof_float * kf->xhatSize);
             memcpy(kf->P_data, kf->Pminus_data, sizeof_float * kf->xhatSize * kf->xhatSize);
-            kf->SkipEq5 = TRUE; // part5 is P updating
+            kf->SkipEq5 = true; // part5 is P updating
             return;
         }
     }
@@ -445,7 +443,7 @@ static void IMU_QuaternionEKF_xhatUpdate(KalmanFilter_t *kf)
             QEKF_INS.AdaptiveGainScale = 1;
         }
         QEKF_INS.ErrorCount = 0;
-        kf->SkipEq5 = FALSE;
+        kf->SkipEq5 = false;
     }
 
     // cal kf-gain K
@@ -518,15 +516,19 @@ float Get_Yaw()
 {
 	return QEKF_INS.Yaw;
 }
-/**
- * @brief 自定义1/sqrt(x),速度更快
- *
- * @param x x
- * @return float
- */
+
 static float invSqrt(float x)
 {
-    // float y; arm_sqrt_f32(x, &y);
-	// return 1.0f / y;
-    return inv_sqrt(x);
+    float halfx = 0.5f * x;
+    float y = x;
+    long i = *(long*)&y;
+    i = 0x5f3759df - (i>>1);
+    y = *(float*)&i;
+    y = y * (1.5f - (halfx * y * y));
+    return y;
+}
+
+// return: { Roll, Pitch, Yaw }
+std::tuple <float, float, float> IMU_QuaternionEKF_Data() {
+    return { QEKF_INS.Roll, QEKF_INS.Pitch, QEKF_INS.Yaw };
 }

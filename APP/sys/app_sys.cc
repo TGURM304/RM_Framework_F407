@@ -28,13 +28,13 @@
 bool inited_ = false;
 
 bool app_sys_ready() {
-    return inited_ && INS::ready();
+    return inited_ && app_ins_status() == 2;
 }
 
 int8_t r = 0, g = 0, b = 0;
 
 void app_sys_init() {
-    INS::init();
+    app_ins_init();
 
 #if defined(COMPILE_CHASSIS)
     app_chassis_init();
@@ -52,7 +52,7 @@ void app_sys_task() {
     bsp_led_set(0, 0, 255);
     app_sys_init();
     bsp_led_set(0, 255, 0);
-    while(!INS::ready()) OS::Task::SleepMilliseconds(1);
+    while(app_ins_status() != 2) OS::Task::SleepMilliseconds(1);
     bsp_buzzer_flash(1976, 0.02, 125);
     OS::Task::SleepMilliseconds(50);
     bsp_buzzer_flash(1976, 0.02, 125);
