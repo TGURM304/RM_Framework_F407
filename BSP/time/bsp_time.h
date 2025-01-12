@@ -13,8 +13,22 @@
 extern "C" {
 #endif
 
+/*!
+ * 获取系统时间
+ * @return 系统时间 (ms)
+ */
 uint32_t bsp_time_get_ms();
+
+/*!
+ * 获取系统时间
+ * @return 系统时间 (us)
+ */
 uint64_t bsp_time_get_us();
+
+/*!
+ * 获取系统时间
+ * @return 系统时间 (us)
+ */
 uint64_t bsp_time_get();
 
 #ifdef __cplusplus

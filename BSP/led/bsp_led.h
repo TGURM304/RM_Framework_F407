@@ -11,8 +11,18 @@
 extern "C" {
 #endif
 
-    void bsp_led_init(void);
-    void bsp_led_set(uint8_t r, uint8_t g, uint8_t b);
+/*!
+ * 初始化 LED
+ */
+void bsp_led_init(void);
+
+/*!
+ * 设置 LED 颜色，三通道范围均为 [0, 255]
+ * @param r 红色
+ * @param g 绿色
+ * @param b 蓝色
+ */
+void bsp_led_set(uint8_t r, uint8_t g, uint8_t b);
 
 #ifdef __cplusplus
 }
