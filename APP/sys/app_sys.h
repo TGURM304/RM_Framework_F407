@@ -11,12 +11,14 @@ bool app_sys_ready();
 extern "C" {
 #endif
 
-void app_sys_init();
+/*!
+ * 系统任务
+ */
 void app_sys_task();
-__weak void app_chassis_task(void *argument);
-__weak void app_gimbal_task(void *argument);
-__weak void dev_dji_motor_task(void *argument);
-__weak void app_ins_task(void *argument);
+__weak void app_chassis_task(void *args);
+__weak void app_gimbal_task(void *args);
+__weak void dev_dji_motor_task(void *args);
+__weak void app_ins_task(void *args);
 
 #ifdef __cplusplus
 }

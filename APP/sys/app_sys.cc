@@ -73,15 +73,15 @@ void app_sys_task() {
  *  - 若不理解下面的代码是什么意思，请不要随意修改。
  */
 
-__weak void app_chassis_task(void *argument) {
+__weak void app_chassis_task(void *args) {
     OS::Task::Current().Delete();
 }
-__weak void app_gimbal_task(void *argument) {
+__weak void app_gimbal_task(void *args) {
     OS::Task::Current().Delete();
 }
-__weak void dev_dji_motor_task(void *argument) {
+__weak void dev_dji_motor_task(void *args) {
     OS::Task::Current().Delete();
 }
-__weak void app_ins_task(void *argument) {
+__weak void app_ins_task(void *args) {
     OS::Task::Current().Delete();
 }
