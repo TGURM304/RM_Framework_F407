@@ -38,7 +38,6 @@ bool app_sys_ready() {
 
 static app_sys_conf_t config;
 static app_sys_flash_t flash;
-static int sys_type_flag = 0;
 
 const app_sys_conf_t *app_sys_conf() {
     return &config;
