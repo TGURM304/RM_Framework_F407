@@ -1,48 +1,45 @@
 //
-// Created by fish on 2024/11/16.
+// Created by fish on 2025/1/3.
 //
 
 #pragma once
-#include "alg_pid.h"
-#include "dev_motor_dji.h"
 
-#define MOTOR_CONTROLLER_LIMIT 16
+#include <utility>
+#include <vector>
+#include <memory>
+#include <functional>
 
-typedef enum {
-    PID_NONE  = 0b00,
-    PID_SPEED = 0b01,
-    PID_ANGLE = 0b10
-} app_motor_ctrl_e;
+#include "controller_base.h"
+#include "motor_base.h"
 
-template <typename T>
+#define APP_MOTOR_ERROR_TIMEOUT 0b00000001
+#define APP_MOTOR_ERROR_STALL   0b00000010
+
 class MotorController {
 public:
-    MotorController() = default;
-};
+	MotorController() = default;
+	explicit MotorController(std::unique_ptr <Motor::Base> motor) : motor_(std::move(motor)) {}
 
-template <>
-class MotorController <DJIMotor> {
-public:
-    MotorController(const char *name, const DJIMotor::Model &model, const DJIMotor::Param &param,
-        uint8_t control_mode,
-        const Algorithm::PID::pid_param_t &pid_speed, const Algorithm::PID::pid_param_t &pid_angle);
+	void init() const;
+	void relax();
+	void activate();
+	void update(double target);
+	void add_controller(std::unique_ptr <Controller::Base> controller);
+	void add_controller(const std::function <float(const MotorController *)>& fn, std::unique_ptr <Controller::Base> controller);
 
-    void init();
-    void task();
-    void relax() { is_relax_ = true, pid_speed_.clear(), pid_angle_.clear(), motor_.update(0); };
-    void activate() { if(is_relax_) is_relax_ = false; };
+	const MotorStatus *device() const { return &motor_->status; }
 
-    float target, speed = 0, angle = 0, lst_angle = 0, sum_angle = 0, encoder_zero = 0;
-    bool reverse = false;               // reverse，启用后会翻转电机速度正方向（仅适用于单速度环控制模式）
-    bool use_ext_angle = false;         // Extra angle，启用后会计算总角度，且依靠总角度闭环
-    bool use_degree_angle = false;      // Degree angle，启用后会以 encoder_zero 为零点将电机角度映射到 [0, 360) (deg) 范围，逆时针为正方向（若电反装则为顺时针）
-    float extra_output = 0;
-    DJIMotor *device() { return &motor_; };
-
+	unsigned char error_code = 0;
+	float output = 0;
+	float speed = 0, angle = 0, current = 0, torque = 0;	// Motor Status
+	/* 扩展功能 */
+	float encoder_zero = 0;
+	bool use_extend_angle = false;							// 使用扩展角度（总角度）
+	bool use_degree_angle = false;							// 使用角度制
 private:
-    uint16_t err_count_ = 0;
-    bool is_relax_ = false, offline_ = false;
-    uint8_t control_mode_;
-    DJIMotor motor_;
-    Algorithm::PID pid_speed_, pid_angle_;
+	bool relaxed_ = false;
+	int err_stall_count_ = 0;
+	float lst_angle_ = 0, cur_angle_ = 0;
+	std::unique_ptr <Motor::Base> motor_;
+	std::vector <std::tuple<std::function<float(const MotorController *)>, std::unique_ptr<Controller::Base>>> pipeline_;
 };

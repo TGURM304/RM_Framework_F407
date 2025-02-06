@@ -5,22 +5,24 @@
 #include "bsp_adc.h"
 
 #include "adc.h"
+#include "bsp_tim.h"
 
 #include "stdint.h"
 
 /*
  *  bsp_adc
  *  读 vbus 电压用
- *  从 dm-mc02 搬过来的，C 板的这部分还没写。
+ *  TODO: 精度待验证
  */
 
 static uint16_t val[2];
 
 void bsp_adc_init(void) {
-    // HAL_ADCEx_Calibration_Start(&hadc1, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
-    // HAL_ADC_Start_DMA(&hadc1, (uint32_t *) val, 2);
+    bsp_tim_config(&htim3, 500);
+    HAL_TIM_Base_Start(&htim3);
+    HAL_ADC_Start_DMA(&hadc3, (uint32_t *) val, 2);
 }
 
 float bsp_adc_vbus(void) {
-    return (float) val[0] * 3.3f / 65535 * 11.0f;
+    return (float) val[0] * 3.3f / 4095 * 222 / 22;
 }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "dev_motor.h"
+#include "motor_base.h"
 #include "bsp_can.h"
 #include <cstdint>
 
@@ -28,46 +28,49 @@
  *      Speed Unit: rpm
  */
 
-class DJIMotor {
-public:
-    DJIMotor() = default;
+namespace Motor {
+	class DJIMotor : public Base {
+	public:
+		DJIMotor() = default;
+		~DJIMotor() override = default;
 
-    enum ControlMode {
-        VOLTAGE, CURRENT
-    };
+		enum ControlMode {
+			VOLTAGE, CURRENT
+		};
 
-    enum Model {
-        MODEL_DEFAULT, GM6020, M3508, M2006
-    };
+		enum Model {
+			MODEL_DEFAULT, GM6020, M3508, M2006
+		};
 
-    struct Param {
-        uint8_t id;
-        bsp_can_e port;
-        ControlMode mode;
-    };
+		struct Param {
+			uint8_t id;
+			bsp_can_e port;
+			ControlMode mode;
+		};
 
-    struct Feedback {
-        int16_t angle, speed, current;
-        uint8_t temp;
-    };
+		struct Feedback {
+			int16_t angle, speed, current;
+			uint8_t temp;
+		};
 
-    MotorStatus status = { 0, 0, 0, 0 };
+		DJIMotor(const char *name, const Model &model, const Param &param);
 
-    DJIMotor(const char *name, const Model &model, const Param &param);
+		void init() override;
+		void clear();
 
-    void init() const;
-    void update(float output);
-    void clear();
+		void enable() override;
+		void disable() override;
+		void update(float output) override;
 
-    float output_;
-    uint16_t ctrl_id = 0, feedback_id = 0;
-    Feedback feedback_ = Feedback();
-    char name_[128] = { 0 };
-private:
-    Model model_ = MODEL_DEFAULT;
-    Param param_ = Param();
-    bool enabled = true;
-};
+		float output_ = 0;
+		uint16_t ctrl_id = 0, feedback_id = 0;
+		Feedback feedback_ = Feedback();
+		char name_[128] = { 0 };
+	private:
+		Model model_ = MODEL_DEFAULT;
+		Param param_ = Param();
+	};
+}
 
 #ifdef __cplusplus
 extern "C" {

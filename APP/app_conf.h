@@ -10,8 +10,19 @@
  *  用来控制系统的一些变量，主要以 define 的形式存在
  */
 
+#define ROBOT_BRIEF "SENTRY"
+
+// 若启用，则可通过串口访问终端
+#define USE_TERMINAL
+
+#define TERMINAL_USER_NAME "user"
+#define TERMINAL_PLATFORM_NAME "stm32"
+
+// 【试验性功能】 若启用，则通过 Flash 检测代码类型是否一致 (判断 ROBOT_BRIEF 和 sys_type 是否相同，专治烧错代码)
+#define USE_FLASH_CHECK
+
 // 底盘
-// #define COMPILE_CHASSIS
+#define COMPILE_CHASSIS
 
 // 云台
 // #define COMPILE_GIMBAL

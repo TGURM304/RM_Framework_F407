@@ -1,126 +1,90 @@
 //
-// Created by fish on 2024/11/16.
+// Created by fish on 2025/1/3.
 //
 
 #include "app_motor.h"
 
-#include <cmath>
-
-#include "bsp_def.h"
 #include "bsp_time.h"
-#include "cmsis_os2.h"
-#include "sys_task.h"
 
-#define ABS(x) (((x) < 0) ? -(x) : (x))
+void MotorController::init() const {
+	motor_->init();
+}
 
-static OS::Task motor_task;
+void MotorController::relax() {
+	if(relaxed_) return;
+	motor_->disable();
+	relaxed_ = true;
+}
 
-// Convert degree to encoder val.
-// [0, 360) -> [0, 8192)
-static float deg2encoder(float x, float zero) {
-    float ret = x * 8192 / 360 + zero;
-    if(ret > 8191) ret -= 8192;
-    return ret;
+void MotorController::activate() {
+	if(!relaxed_) return;
+	motor_->enable();
+	relaxed_ = false;
 }
 
 // Convert encoder val to degree.
 // [0, 8192) -> [0, 360)
 static float encoder2deg(float x, float zero) {
-    x -= zero;
-    if(x < 0) x += 8192;
-    return x * 360 / 8192;
+	x -= zero;
+	if(x < 0) x += 8192;
+	return x * 360 / 8192;
 }
 
-static double encoder_delta(double current, double target) {
-    double dt = target - current;
-    // 0 - 8191
-    if(dt >  4096) dt -= 8192;
-    if(dt < -4096) dt += 8192;
-    return dt;
+static float calc_delta(float full, float current, float target) {
+	float dt = target - current;
+	if(2 * dt >  full) dt -= full;
+	if(2 * dt < -full) dt += full;
+	return dt;
 }
 
-static double degree_delta(double current, double target) {
-    double dt = target - current;
-    // 0 - 359
-    if(dt >  180) dt -= 360;
-    if(dt < -180) dt += 360;
-    return dt;
+void MotorController::update(double target) {
+	// Offline Detect
+	if(bsp_time_get_ms() - motor_->status.last_online_time > 500) {
+		// 500ms
+		relax();
+		error_code |= APP_MOTOR_ERROR_TIMEOUT;
+		return;
+	}
+
+	if(error_code & APP_MOTOR_ERROR_TIMEOUT)
+		activate(), error_code ^= APP_MOTOR_ERROR_TIMEOUT;
+
+	// Relax Mode or Error Mode
+	if(relaxed_ || error_code) return;
+
+	std::tie(speed, cur_angle_, current, torque) = std::make_tuple <double> (
+		motor_->status.speed,
+		use_degree_angle ? encoder2deg(motor_->status.angle, encoder_zero) : motor_->status.angle,
+		motor_->status.current,
+		motor_->status.torque
+	);
+
+	if(use_extend_angle) {
+		if(use_degree_angle)
+			angle -= calc_delta(360, cur_angle_, lst_angle_);
+		else
+			angle -= calc_delta(8192, cur_angle_, lst_angle_);
+		lst_angle_ = cur_angle_;
+	} else {
+		angle = cur_angle_;
+	}
+
+	auto result = static_cast <float> (target);
+
+	for(auto &[fn, controller] : pipeline_) {
+		if(fn == nullptr)
+			result = controller->update(this, result);
+		else
+			result = controller->update(fn(this), result);
+	}
+
+	motor_->update(output = result);
 }
 
-MotorController <DJIMotor> :: MotorController(const char *name, const DJIMotor::Model &model, const DJIMotor::Param &param,
-        uint8_t control_mode,
-        const Algorithm::PID::pid_param_t &pid_speed, const Algorithm::PID::pid_param_t &pid_angle) :
-        motor_(name, model, param), control_mode_(control_mode), target(0.0) {
-
-    pid_speed_.set_para(pid_speed);
-    pid_angle_.set_para(pid_angle);
+void MotorController::add_controller(std::unique_ptr <Controller::Base> controller) {
+	pipeline_.emplace_back(nullptr, std::move(controller));
 }
 
-void MotorController <DJIMotor> ::init() {
-    motor_.init();
-
-    auto fn = [](MotorController *p) -> void {
-        while(true) {
-            p->task();
-            osDelay(1);
-        }
-    };
-
-    motor_task.Create(fn, this, "motor_task", 128, OS::Task::REALTIME);
-}
-
-void MotorController <DJIMotor> ::task() {
-    // Offline
-    if(bsp_time_get_ms() - motor_.status.last_online_time > 500) {
-        if(!offline_) {
-            offline_ = true;
-            target = 0;
-            motor_.clear();
-            pid_angle_.clear();
-            pid_speed_.clear();
-        }
-        return;
-    }
-
-    offline_ = false;
-
-    // 把电机数据搬过来
-    speed = motor_.status.speed;
-    angle = use_degree_angle ? encoder2deg(motor_.status.angle, encoder_zero) : motor_.status.angle;
-
-    // 计算总角度
-    if(use_ext_angle) {
-        if(use_degree_angle)
-            sum_angle -= static_cast <float> (degree_delta(angle, lst_angle));
-        else
-            sum_angle -= static_cast <float> (encoder_delta(angle, lst_angle));
-        lst_angle = angle;
-    }
-
-    // Relax
-    if(is_relax_) return;
-
-    // 堵转保护，暂时先这样写（不是很合理，后面要把加速度考虑进去）
-    if(ABS(motor_.status.current) > 10000) {
-        if(++ err_count_ == 1000) {
-            relax();
-            return;
-        }
-    } else {
-        err_count_ = 0;
-    }
-
-    double output = reverse ? -target : target;
-    if(control_mode_ & PID_ANGLE) {
-        // 建议 reverse 仅在速度环中使用，否则可能导致逻辑混乱
-        BSP_ASSERT(!reverse);
-        if(use_ext_angle)
-            output = pid_angle_.update(sum_angle, output);
-        else
-            output = pid_angle_.update(0, use_degree_angle ? degree_delta(angle, output) : encoder_delta(angle, output));
-    }
-    if(control_mode_ & PID_SPEED) {
-        output = pid_speed_.update(speed, output);
-    }
-    motor_.update(static_cast <float> (output));
+void MotorController::add_controller(const std::function <float(const MotorController *)>& fn, std::unique_ptr <Controller::Base> controller) {
+	pipeline_.emplace_back(fn, std::move(controller));
 }

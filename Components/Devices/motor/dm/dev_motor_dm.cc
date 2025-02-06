@@ -10,6 +10,8 @@
 #include "BMI088reg.h"
 #include "bsp_def.h"
 
+using namespace Motor;
+
 static DMMotor *device_ptr[BSP_CAN_ENUM_SIZE];
 uint8_t device_cnt[BSP_CAN_ENUM_SIZE];
 
@@ -43,13 +45,17 @@ void DMMotor::reset() {
 }
 
 void DMMotor::enable() {
+    // if(enabled_) return;
     uint8_t msg[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfc };
     bsp_can_send(param_.port, ctrl_id, msg);
+    enabled_ = true;
 }
 
 void DMMotor::disable() {
+    // if(!enabled_) return;
     uint8_t msg[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfd };
     bsp_can_send(param_.port, ctrl_id, msg);
+    enabled_ = false;
 }
 
 float uint_to_float(int x_int, float x_min, float x_max, int bits) {
@@ -65,6 +71,7 @@ int float_to_uint(float x, float x_min, float x_max, int bits) {
 // SPEED
 void DMMotor::control(float speed) const {
     BSP_ASSERT(param_.mode == SPEED);
+    if(!enabled_) return;
     uint8_t msg[8] = { 0 };
     memcpy(msg, &speed, sizeof speed);
     bsp_can_send(param_.port, ctrl_id, msg);
@@ -73,6 +80,7 @@ void DMMotor::control(float speed) const {
 // POSITION_SPEED
 void DMMotor::control(float position, float speed) const {
     BSP_ASSERT(param_.mode == POSITION_SPEED);
+    if(!enabled_) return;
     uint8_t msg[8] = { 0 };
     memcpy(msg, &position, sizeof position);
     memcpy(msg + sizeof position, &speed, sizeof speed);
@@ -82,6 +90,7 @@ void DMMotor::control(float position, float speed) const {
 // MIT
 void DMMotor::control(float position, float speed, float Kp, float Kd, float torque) const {
     BSP_ASSERT(param_.mode == MIT);
+    if(!enabled_) return;
 
     uint16_t P_des = float_to_uint(position, -param_.p_max, param_.p_max, 16),
              V_des = float_to_uint(speed, -param_.v_max, param_.v_max, 12),
@@ -104,6 +113,12 @@ void DMMotor::control(float position, float speed, float Kp, float Kd, float tor
 DMMotor::Param *DMMotor::get_param() {
     return &param_;
 }
+
+void DMMotor::update(float output) {
+    // Error
+    ;
+}
+
 
 void dev_dm_motor_can_callback(bsp_can_msg_t* msg) {
     if(!device_cnt[msg->port]) return;

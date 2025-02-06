@@ -3,11 +3,15 @@
 //
 
 #include "dev_motor_dji.h"
+
+#include <cstdio>
+
 #include "bsp_can.h"
 #include "bsp_def.h"
 #include "bsp_time.h"
 #include <cstring>
-#include <stdbool.h>
+
+using namespace Motor;
 
 static constexpr uint16_t ctrl_id_map[] = { 0x2ff, 0x1ff, 0x2fe, 0x1fe, 0x200 };
 static constexpr size_t ctrl_id_map_size = sizeof(ctrl_id_map) / sizeof(uint16_t);
@@ -22,7 +26,7 @@ static uint8_t device_cnt[BSP_CAN_ENUM_SIZE];
 static uint8_t can_tx_buf[BSP_CAN_ENUM_SIZE][ctrl_id_map_size + 1][8];
 static bool ctrl_id_used[BSP_CAN_ENUM_SIZE][ctrl_id_map_size + 1];
 
-DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) : model_(model), param_(param) {
+DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) : model_(model), param_(param), output_(0) {
     BSP_ASSERT(model == GM6020 or model == M3508 or model == M2006);
     BSP_ASSERT(0 <= param.port and param.port < BSP_CAN_ENUM_SIZE);
 
@@ -51,12 +55,16 @@ DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) : m
     ctrl_id_used[param.port][id_trans(ctrl_id)] = true;
 }
 
-void DJIMotor::init() const {
+
+void DJIMotor::init() {
     // Can Register
     bsp_can_set_callback(param_.port, feedback_id, dev_dji_motor_can_callback);
+    // Enable the motor
+    enable();
 }
 
 void DJIMotor::update(float output) {
+    if(!enabled_) return;
     output_ = output;
     uint8_t cid = id_trans(ctrl_id), mid = param_.id < 5 ? param_.id : param_.id - 4;
     can_tx_buf[param_.port][cid][(mid - 1) << 1] = static_cast <int16_t> (output) >> 8;
@@ -66,6 +74,17 @@ void DJIMotor::update(float output) {
 void DJIMotor::clear() {
     update(0);
     status.angle = status.current = status.speed = status.temperature = 0;
+}
+
+void DJIMotor::enable() {
+    if(enabled_) return;
+    enabled_ = true;
+}
+
+void DJIMotor::disable() {
+    if(!enabled_) return;
+    clear();
+    enabled_ = false;
 }
 
 void dev_dji_motor_can_callback(bsp_can_msg_t *msg) {
