@@ -10,8 +10,6 @@
 
 bool app_sys_ready();
 
-#define SYS_CONST_FLAG 998244353
-
 struct app_sys_flash_t {
     int flag = 0;
     char brief[32] = "";

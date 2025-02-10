@@ -46,13 +46,13 @@ const app_sys_conf_t *app_sys_conf() {
 void app_sys_terminal_init() {
     app_terminal_register_cmd("sys", "system commands", [](const auto& args) -> bool {
         if(args.size() == 1) {
-            TERMINAL_INFO("usage: sys vbus");
+            TERMINAL_INFO("usage: sys vbus\r\n");
             return true;
         }
         if(args[1] == "vbus") {
             auto running = app_terminal_running_flag();
             while(*running) {
-                TERMINAL_INFO_PRINTF("vbus: %f\r\n", bsp_adc_vbus());
+                TERMINAL_INFO("vbus: %f\r\n", bsp_adc_vbus());
                 OS::Task::SleepMilliseconds(10);
             }
         }
@@ -78,12 +78,12 @@ void app_sys_init() {
 #ifdef USE_FLASH_CHECK
     // 校验 flash 中的 brief，若此处校验不通过，请连接 terminal 执行 flash clear
     bsp_flash_read("sys", &flash, sizeof(flash));
-    if(flash.flag == SYS_CONST_FLAG) {
+    if(flash.flag == SYS_FLASH_KEY) {
         if(strcmp(config.brief, flash.brief) != 0 or (config.type and flash.type != config.type)) {
             app_sys_err_mark(SYS_ERR_FLASH_WRONG_BRIEF);
         }
     } else {
-        flash.flag = SYS_CONST_FLAG;
+        flash.flag = SYS_FLASH_KEY;
         strcpy(flash.brief, config.brief);
         flash.type = config.type;
         bsp_flash_write("sys", &flash, sizeof(flash));
@@ -93,7 +93,6 @@ void app_sys_init() {
     inited_ = true;
 }
 
-int8_t r = 0, g = 0, b = 0;
 // 放一些系统级任务
 void app_sys_task() {
     bsp_buzzer_flash(1976, 0.02, 250);
@@ -108,6 +107,7 @@ void app_sys_task() {
         OS::Task::SleepMilliseconds(50);
         bsp_buzzer_flash(1976, 0.02, 125);
     }
+    int8_t r = 0, g = 0, b = 0;
     while(true) {
         if(!app_sys_err()) {
             // 系统正常工作，白色呼吸灯

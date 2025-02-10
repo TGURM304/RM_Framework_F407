@@ -9,8 +9,6 @@
 #include <initializer_list>
 #include "bsp_uart.h"
 
-#define APP_MSG_VOFA_CHANNEL_LIMIT 10
-
 /*!
  * 通过 Vofa+ 的 Justfloat 协议发送调试数据
  * @param e 串口枚举类

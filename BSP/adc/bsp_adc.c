@@ -24,5 +24,5 @@ void bsp_adc_init(void) {
 }
 
 float bsp_adc_vbus(void) {
-    return (float) val[0] * 3.3f / 4095 * 222 / 22;
+    return 3.3f * (float) val[0] * 222 / 4095 / 22;
 }
