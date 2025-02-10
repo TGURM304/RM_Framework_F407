@@ -30,7 +30,7 @@ namespace Controller {
 			Kp_ = Kp, Ki_ = Ki, Kd_ = Kd, out_limit_ = out_limit, iout_limit_ = iout_limit;
 			clear();
 		}
-	private:
+	// private:
 		double Kp_, Ki_, Kd_, out_limit_, iout_limit_;
 		double err[3]{}, p_out = 0, i_out = 0, d_out = 0, out = 0;
 	};
