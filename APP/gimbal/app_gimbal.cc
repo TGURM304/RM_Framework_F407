@@ -4,6 +4,7 @@
 
 #include "app_gimbal.h"
 
+
 #ifdef COMPILE_GIMBAL
 
 // 静态任务，在 CubeMX 中配置
