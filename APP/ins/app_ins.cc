@@ -127,7 +127,7 @@ void app_ins_task(void *args) {
 	while(!inited_) OS::Task::SleepMilliseconds(10);
 
 	int freq_cnt = 0;
-    int count = !!ins_flag * GYRO_CORRECT_SAMPLE_ALTERNATE_COUNT;
+    int count = !ins_flag * GYRO_CORRECT_SAMPLE_ALTERNATE_COUNT;
 
     while(true) {
         bsp_imu_read(&data.raw);

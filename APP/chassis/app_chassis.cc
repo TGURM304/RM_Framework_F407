@@ -4,9 +4,6 @@
 
 #include "app_chassis.h"
 
-#include "app_sys.h"
-#include "sys_task.h"
-
 #ifdef COMPILE_CHASSIS
 
 // 静态任务，在 CubeMX 中配置
