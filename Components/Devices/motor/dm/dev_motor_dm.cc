@@ -125,7 +125,7 @@ void dev_dm_motor_can_callback(bsp_can_msg_t* msg) {
 
     DMMotor *p = nullptr;
     for(uint8_t i = 0; i < device_cnt[msg->port]; i++) {
-        if(msg->header.StdId == device_ptr[msg->port][i]->feedback_id) {
+        if(msg->header.Identifier == device_ptr[msg->port][i]->feedback_id) {
             p = device_ptr[msg->port][i];
             break;
         }
@@ -145,7 +145,7 @@ void dev_dm_motor_can_callback(bsp_can_msg_t* msg) {
     const auto para = p->get_param();
     p->status.pos = uint_to_float(p->feedback_.pos, -para->p_max, para->p_max, 16);
     p->status.vel = uint_to_float(p->feedback_.vel, -para->v_max, para->v_max, 12);
-    p->status.torque = uint_to_float(p->feedback_.t, 0, para->t_max, 12);
+    p->status.torque = uint_to_float(p->feedback_.t, -para->t_max, para->t_max, 12);
     p->status.err = p->feedback_.err;
     p->status.t_mos = p->feedback_.t_mos;
     p->status.t_rotor = p->feedback_.t_rotor;
