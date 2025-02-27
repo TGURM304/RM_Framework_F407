@@ -17,6 +17,7 @@
 bsp_rc_init();
 bsp_led_init();
 bsp_adc_init();
+bsp_flash_init();
 bsp_buzzer_init();
 bsp_led_set(255, 0, 0);
 bsp_can_init(E_CAN1, &hcan1);
