@@ -373,7 +373,7 @@ SpacesInCStyleCastParentheses: false
 SpacesInLineCommentPrefix:
   Minimum:         1
   Maximum:         -1
-# 贺括号内是否加space, false
+# 小括号内是否加space, false
 SpacesInParentheses: false
 # 中括号内是否加space, false
 SpacesInSquareBrackets: false
