@@ -125,7 +125,7 @@ void dev_dm_motor_can_callback(bsp_can_msg_t* msg) {
 
     DMMotor *p = nullptr;
     for(uint8_t i = 0; i < device_cnt[msg->port]; i++) {
-        if(msg->header.Identifier == device_ptr[msg->port][i]->feedback_id) {
+        if(msg->header.StdId == device_ptr[msg->port][i]->feedback_id) {
             p = device_ptr[msg->port][i];
             break;
         }
