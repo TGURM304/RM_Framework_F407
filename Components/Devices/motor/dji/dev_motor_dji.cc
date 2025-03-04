@@ -92,7 +92,7 @@ void dev_dji_motor_can_callback(bsp_can_msg_t *msg) {
 
     DJIMotor *p = nullptr;
     for(uint8_t i = 0; i < device_cnt[msg->port]; i++) {
-        if(device_ptr[msg->port][i]->feedback_id == msg->header.Identifier) {
+        if(device_ptr[msg->port][i]->feedback_id == msg->header.StdId) {
             p = device_ptr[msg->port][i];
             break;
         }
