@@ -4,31 +4,31 @@
 
 #include "app_sys.h"
 
-#include "app_chassis.h"
-#include "app_conf.h"
-#include "app_gimbal.h"
 #include "app_ins.h"
 #include "app_motor.h"
-#include "bsp_adc.h"
-#include "bsp_buzzer.h"
+#include "bsp_uart.h"
 #include "bsp_can.h"
 #include "bsp_led.h"
+#include "bsp_adc.h"
 #include "bsp_rc.h"
-#include "bsp_uart.h"
 #include "motor_base.h"
 #include "sys_task.h"
+#include "app_chassis.h"
+#include "app_gimbal.h"
+#include "app_conf.h"
+#include "bsp_buzzer.h"
 
-#include <cmath>
 #include <cstdio>
+#include <cmath>
+#include <cstring>
 
 #include "bsp_def.h"
 
 #include "app_msg.h"
+#include "app_referee.h"
 #include "app_sys_err.h"
 #include "app_terminal.h"
 #include "bsp_flash.h"
-
-#include <cstring>
 
 bool inited_ = false;
 
@@ -44,7 +44,7 @@ const app_sys_conf_t *app_sys_conf() {
 }
 
 void app_sys_terminal_init() {
-    app_terminal_register_cmd("sys", "system commands", [](const auto& args) -> bool {
+    app_terminal_register_cmd("sys", "system commands", [](const auto &args) -> bool {
         if(args.size() == 1) {
             TERMINAL_INFO("usage: sys vbus\r\n");
             return true;
@@ -61,10 +61,9 @@ void app_sys_terminal_init() {
 }
 
 void app_sys_init() {
-
+    app_ins_init();
 #ifdef USE_TERMINAL
     app_terminal_init();
-    app_sys_terminal_init();
 #endif
 #ifdef COMPILE_CHASSIS
     config.type |= 0b01;
@@ -74,7 +73,9 @@ void app_sys_init() {
     config.type |= 0b10;
     app_gimbal_init();
 #endif
-
+#ifdef USE_REFEREE_SYSTEM
+    app_referee_init();
+#endif
 #ifdef USE_FLASH_CHECK
     // 校验 flash 中的 brief，若此处校验不通过，请连接 terminal 执行 flash clear
     bsp_flash_read("sys", &flash, sizeof(flash));
@@ -89,7 +90,6 @@ void app_sys_init() {
         bsp_flash_write("sys", &flash, sizeof(flash));
     }
 #endif
-
     inited_ = true;
 }
 
@@ -99,7 +99,6 @@ void app_sys_task() {
     bsp_led_set(0, 0, 255);
     app_sys_init();
     bsp_led_set(0, 255, 0);
-    app_ins_init();
     while(app_ins_status() != 2)
         OS::Task::SleepMilliseconds(1);
     if(!app_sys_err()) {
@@ -118,8 +117,7 @@ void app_sys_task() {
             OS::Task::SleepMilliseconds(10);
         } else {
             // FLASH 描述符错误，黄灯快闪
-            if(app_sys_err_check(SYS_ERR_FLASH_WRONG_BRIEF))
-                bsp_led_set(50, 50, 0);
+            if(app_sys_err_check(SYS_ERR_FLASH_WRONG_BRIEF)) bsp_led_set(50, 50, 0);
             OS::Task::SleepMilliseconds(100);
             bsp_led_set(0, 0, 0);
             OS::Task::SleepMilliseconds(100);
@@ -135,15 +133,18 @@ void app_sys_task() {
  *  - 若不理解下面的代码是什么意思，请不要随意修改。
  */
 
-__weak void app_chassis_task(void *args) {
+__weak void app_chassis_task(void *argument) {
     OS::Task::Current().Delete();
 }
-__weak void app_gimbal_task(void *args) {
+
+__weak void app_gimbal_task(void *argument) {
     OS::Task::Current().Delete();
 }
-__weak void dev_dji_motor_task(void *args) {
+
+__weak void dev_dji_motor_task(void *argument) {
     OS::Task::Current().Delete();
 }
-__weak void app_ins_task(void *args) {
+
+__weak void app_ins_task(void *argument) {
     OS::Task::Current().Delete();
 }
