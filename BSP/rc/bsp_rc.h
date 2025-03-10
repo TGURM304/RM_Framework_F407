@@ -30,8 +30,8 @@ typedef struct {
     union {
         uint16_t raw;
         struct __attribute__((packed)) {
-            bool w : 1, s : 1, a : 1, d : 1, shift : 1, ctrl : 1, q : 1,
-            e : 1, r : 1, f : 1, g : 1, z : 1, x : 1, c : 1, v : 1, b : 1;
+            bool b : 1, v : 1, c : 1, x : 1, z : 1, g : 1, f : 1, r : 1,
+            e : 1, q : 1, ctrl : 1, shift : 1, d : 1, a : 1, s : 1, w : 1;
         } key;
     } keyboard;
     int16_t reserved;
