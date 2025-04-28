@@ -58,3 +58,13 @@ inline app_music_note_t app_music_notes_boot[] = {
     {0, 0, 15},
     {D1, 0.05, HalfBeat * 3},
 };
+
+inline app_music_note_t app_music_notes_begin[] = {
+    {D1, 0.03, 75},
+    {D3, 0.03, 75},
+};
+
+inline app_music_note_t app_music_notes_end[] = {
+    {D3, 0.03, 75},
+    {D1, 0.03, 75},
+};

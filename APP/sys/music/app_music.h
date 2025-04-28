@@ -6,6 +6,8 @@
 
 enum app_sys_music_e {
     E_MUSIC_BOOT,
+    E_MUSIC_BEGIN,
+    E_MUSIC_END,
     E_MUSIC_YOU
 };
 
