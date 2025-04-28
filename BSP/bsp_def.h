@@ -20,8 +20,8 @@ __attribute__((unused)) static void bsp_assert_err(const char* file, uint32_t li
     UNUSED(file); UNUSED(line);
     // 开启 rtos 调度锁，强行停止其他任务，便于调试。
     vTaskSuspendAll();
+    bsp_buzzer_quiet();
     bsp_led_set(255, 0, 0);
-    bsp_uart_printf(E_UART_DEBUG, "[Err] BSP Assert error at %s:%lu\r\n", file, line);
     while(1) __NOP();
 }
 
