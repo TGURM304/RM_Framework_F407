@@ -14,29 +14,32 @@ app_music_note_t *playing_note_ptr = nullptr;
 app_music_note_t *playing_note_end_ptr = nullptr;
 
 OS::Task sys_music;
+
 static void task(void *args) {
-    if(!playing or playing_note_ptr == nullptr or playing_note_end_ptr == nullptr) {
+    while(true) {
+        if(!playing or playing_note_ptr == nullptr or playing_note_end_ptr == nullptr) {
+            playing = false;
+            bsp_buzzer_quiet();
+            sys_music.Suspend();
+            continue;
+        }
+
+        auto &p = playing_note_ptr;
+
+        while(playing and playing_note_ptr < playing_note_end_ptr) {
+            if(p->freq == 0) {
+                bsp_buzzer_quiet();
+            } else {
+                bsp_buzzer_alarm(p->freq, p->blank);
+            }
+            OS::Task::SleepMilliseconds(p->duration);
+            playing_note_ptr ++;
+        }
+
         playing = false;
         bsp_buzzer_quiet();
-        sys_music.Delete();
-        return;
+        sys_music.Suspend();
     }
-
-    auto &p = playing_note_ptr;
-
-    while(playing_note_ptr < playing_note_end_ptr) {
-        if(p->freq == 0) {
-            bsp_buzzer_quiet();
-        } else {
-            bsp_buzzer_alarm(p->freq, p->blank);
-        }
-        OS::Task::SleepMilliseconds(p->duration);
-        playing_note_ptr ++;
-    }
-
-    playing = false;
-    bsp_buzzer_quiet();
-    sys_music.Delete();
 }
 
 void app_sys_music_play(app_sys_music_e e) {
@@ -45,6 +48,12 @@ void app_sys_music_play(app_sys_music_e e) {
     case E_MUSIC_BOOT:
         SET(app_music_notes_boot);
         break;
+    case E_MUSIC_BEGIN:
+        SET(app_music_notes_begin);
+        break;
+    case E_MUSIC_END:
+        SET(app_music_notes_end);
+        break;
     case E_MUSIC_YOU:
         SET(app_music_notes_you);
         break;
@@ -52,14 +61,13 @@ void app_sys_music_play(app_sys_music_e e) {
         return;
     }
 #undef SET
-    if(!playing) {
-        playing = true;
+    if(sys_music.handle_ == nullptr)
         sys_music.Create(task, static_cast<void *>(nullptr), "music", 128, OS::Task::HIGH);
-    }
+    else if(!playing) sys_music.Resume();
+    playing = true;
 }
 
 void app_sys_music_stop() {
     playing = false;
-    bsp_buzzer_quiet();
-    sys_music.Delete();
+    sys_music.Suspend();
 }
