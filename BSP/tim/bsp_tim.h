@@ -7,6 +7,8 @@
 
 #include "tim.h"
 
+#define BSP_TIM_LIMIT 25
+
 /*!
  * 设置时钟设备原始参数 (意义同 CubeMX 中相关参数)
  * @param h 时钟设备

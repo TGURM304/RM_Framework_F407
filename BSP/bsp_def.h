@@ -11,6 +11,7 @@
 #include "cmsis_os2.h"
 #include "bsp_led.h"
 #include "bsp_sys.h"
+#include "bsp_buzzer.h"
 
 #ifdef __cplusplus
 extern "C" {
