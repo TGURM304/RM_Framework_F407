@@ -12,19 +12,6 @@
 - 使用 `git clone` 将仓库克隆到本地。
 - 使用 `CLion` 打开它。
 - 打开 `STM32CubeMX` 生成代码。
-- 在 `Core/Src/main.c` 中添加形如下面的初始化函数（请根据实际情况选择串口）。
-```c++
-bsp_rc_init();
-bsp_led_init();
-bsp_adc_init();
-bsp_flash_init();
-bsp_buzzer_init();
-bsp_led_set(255, 0, 0);
-bsp_can_init(E_CAN1, &hcan1);
-bsp_can_init(E_CAN2, &hcan2);
-bsp_uart_init(E_UART_DEBUG, &huart1);
-bsp_uart_init(E_UART_VISION, &huart6);
-```
 - **根据实际情况修改 app_conf.h 中的 ROBOT_BRIEF。**
 - 检查无误后编译运行。
 
