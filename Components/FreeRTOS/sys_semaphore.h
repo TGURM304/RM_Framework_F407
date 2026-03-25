@@ -17,7 +17,7 @@ namespace OS {
 
         void post() {
             if(bsp_sys_in_isr()) {
-                BaseType_t xHigherPriorityTaskWoken;
+                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
                 xSemaphoreGiveFromISR(handle_, &xHigherPriorityTaskWoken);
                 portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
             } else {
@@ -27,7 +27,7 @@ namespace OS {
 
         bool wait(uint32_t timeout = UINT32_MAX) {
             if(bsp_sys_in_isr()) {
-                BaseType_t xHigherPriorityTaskWoken;
+                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
                 auto re = xSemaphoreTakeFromISR(handle_, &xHigherPriorityTaskWoken);
                 portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
                 return re == pdTRUE;

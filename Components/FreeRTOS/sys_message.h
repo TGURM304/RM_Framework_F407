@@ -18,19 +18,19 @@ public:
     template <typename T>
     bool send(const T& data, size_t sz = sizeof(T)) {
         if(bsp_sys_in_isr()) {
-            BaseType_t xHigherPriorityTaskWoken;
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             auto re = xMessageBufferSendFromISR(msg_, &data, sz, &xHigherPriorityTaskWoken);
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
             return re == pdTRUE;
         } else {
-            return xMessageBufferSend(msg_, &data, 0, sz) == pdTRUE;
+            return xMessageBufferSend(msg_, &data, sz, 0) == pdTRUE;
         }
     }
 
     template <typename T>
     bool receive(T& data, size_t sz = sizeof(T)) {
         if(bsp_sys_in_isr()) {
-            BaseType_t xHigherPriorityTaskWoken;
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
             auto re = xMessageBufferReceiveFromISR(msg_, &data, sz, &xHigherPriorityTaskWoken);
             portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
             return re == pdTRUE;

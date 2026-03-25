@@ -18,6 +18,7 @@ uint8_t device_cnt[BSP_CAN_ENUM_SIZE];
 DMMotor::DMMotor(const char *name, const Model &model, const Param &param) : model_(model), param_(param){
     BSP_ASSERT(model == J4310 or model == J8009P);
     BSP_ASSERT(0 <= param.port and param.port < BSP_CAN_ENUM_SIZE);
+    BSP_ASSERT(device_cnt[param.port] < DM_MOTOR_LIMIT);
 
     if(model == J4310 or model == J8009P) {
         if(param.mode == MIT) {

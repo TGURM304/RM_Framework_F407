@@ -60,7 +60,7 @@ void MotorController::update(double target) {
 
     if(use_stall_detect) {
         if(error_code & APP_MOTOR_ERROR_STALL) {
-            if(std::abs(motor_->status.current < 1000)) {
+            if(std::abs(motor_->status.current) < 1000) {
                 if(++err_stall_count_ == 5 * stall_detector_time_threshold) {
                     activate(false), error_code ^= APP_MOTOR_ERROR_STALL;
                     err_stall_count_ = 0;

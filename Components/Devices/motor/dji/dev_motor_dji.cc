@@ -29,6 +29,7 @@ static bool ctrl_id_used[BSP_CAN_ENUM_SIZE][ctrl_id_map_size + 1];
 DJIMotor::DJIMotor(const char *name, const Model &model, const Param &param) : model_(model), param_(param), output_(0) {
     BSP_ASSERT(model == GM6020 or model == M3508 or model == M2006);
     BSP_ASSERT(0 <= param.port and param.port < BSP_CAN_ENUM_SIZE);
+    BSP_ASSERT(device_cnt[param.port] < DJI_MOTOR_LIMIT);
 
     // Init Motor Param
     strcpy(name_, name);

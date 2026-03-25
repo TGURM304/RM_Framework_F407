@@ -14,7 +14,7 @@ namespace OS {
         static bool action(Task& task, int sig) {
             BSP_ASSERT(0 <= sig and sig < 32);
             if(bsp_sys_in_isr()) {
-                BaseType_t xHigherPriorityTaskWoken;
+                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
                 auto re = xTaskNotifyFromISR(task.handle_, 1 << sig, eSetBits, &xHigherPriorityTaskWoken);
                 portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
                 return re == pdTRUE;

@@ -30,6 +30,7 @@ bsp_rc_data_t data;
 void rc_uart_callback(bsp_uart_e e, uint8_t *s, uint16_t l) {
     BSP_ASSERT(e == E_UART_RC);
     BSP_ASSERT(sizeof(bsp_rc_raw_t) * 8 == 128 + 16);
+    if (l != sizeof raw) return;
     memcpy(&raw, s, sizeof raw);
     data.rc_l[0] = (int16_t) ((int16_t) raw.ch2 - 1024), data.rc_l[1] = (int16_t) ((int16_t) raw.ch3 - 1024);
     data.rc_r[0] = (int16_t) ((int16_t) raw.ch0 - 1024), data.rc_r[1] = (int16_t) ((int16_t) raw.ch1 - 1024);

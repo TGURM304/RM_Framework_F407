@@ -16,7 +16,7 @@ namespace OS {
 
         bool send(const T& data) {
             if(bsp_sys_in_isr()) {
-                BaseType_t xHigherPriorityTaskWoken;
+                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
                 auto re = xQueueSendFromISR(queue_, &data, &xHigherPriorityTaskWoken);
                 portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
                 return re == pdTRUE;
@@ -27,7 +27,7 @@ namespace OS {
 
         bool receive(T& data) {
             if(bsp_sys_in_isr()) {
-                BaseType_t xHigherPriorityTaskWoken;
+                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
                 auto re = xQueueReceiveFromISR(queue_, &data, &xHigherPriorityTaskWoken);
                 portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
                 return re == pdTRUE;
@@ -38,7 +38,7 @@ namespace OS {
 
         bool overwrite(T &data) {
             if(bsp_sys_in_isr()) {
-                BaseType_t xHigherPriorityTaskWoken;
+                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
                 auto re = xQueueOverwriteFromISR(queue_, &data, &xHigherPriorityTaskWoken);
                 portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
                 return re == pdTRUE;
